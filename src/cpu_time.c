@@ -27,6 +27,8 @@
  *  double cpu_time( void );
  */
 
+#include "cpu_time.h"
+
 #ifdef TEST
 #include <stdio.h>
 #define TEST_MESSAGE(s) printf("by %s\n", s)

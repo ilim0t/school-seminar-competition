@@ -5,7 +5,10 @@ project(seminar-competition C)
 set(CMAKE_CC_FLAGS "${CMAKE_CC_FLAGS} -O2 -lm")
 
 set(SRCS
-    src/tsp.c)
+    src/algorithm.c
+    src/cpu_time.c
+    src/tsp.c
+    src/utils.c    )
 
 add_executable(${PROJECT_NAME} ${SRCS})
 target_link_libraries(${PROJECT_NAME} PRIVATE m)
