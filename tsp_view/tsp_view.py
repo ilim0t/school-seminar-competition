@@ -33,11 +33,11 @@ def main():
 
     with open(file_vertex, 'w') as f:
         for node in nodes:
-            f.write('%d %d\n' % (int(node['x']), int(node['y'])))
+            f.write('%f %f\n' % (node['x'], node['y']))
 
     with open(file_edge, 'w') as f:
         for i in route:
-            f.write('%d %d\n' % (int(nodes[i]['x']), int(nodes[i]['y'])))
+            f.write('%f %f\n' % (nodes[i]['x'], nodes[i]['y']))
 
     # execute gnuplot
     subprocess.call(['gnuplot', './plot.gp'])
