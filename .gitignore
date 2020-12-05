@@ -51,5 +51,7 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-sample
+build/
 source/
+tsp_view/data/
+tsp_view/image.eps
