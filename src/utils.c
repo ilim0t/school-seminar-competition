@@ -231,7 +231,9 @@ void output_tour_for_tsp_view(FILE* out, TSPdata* tspdata, int* tour) {
 
 /***** check the feasibility and recompute the cost **************************/
 /***** NEVER MODIFY THIS SUBROUTINE! *****************************************/
-void recompute_obj(Param* param, TSPdata* tspdata, Vdata* vdata) {
+void recompute_obj(const Param* const param,
+                   const TSPdata* const tspdata,
+                   const Vdata* const vdata) {
   if (!is_feasible(tspdata, vdata->bestsol)) {
     fprintf(stderr, "error: the computed tour is not feasible.\n");
     exit(EXIT_FAILURE);
@@ -246,7 +248,7 @@ void recompute_obj(Param* param, TSPdata* tspdata, Vdata* vdata) {
 
 /***** cost of the tour ******************************************************/
 /***** NEVER MODIFY THIS SUBROUTINE! *****************************************/
-int compute_cost(TSPdata* tspdata, int* tour) {
+int compute_cost(const TSPdata* const tspdata, const int* const tour) {
   int k, cost = 0, n;
   n = tspdata->n;
 
@@ -261,7 +263,7 @@ int compute_cost(TSPdata* tspdata, int* tour) {
 
 /***** check the feasibility of the tour *************************************/
 /***** NEVER MODIFY THIS SUBROUTINE! *****************************************/
-int is_feasible(TSPdata* tspdata, int* tour) {
+int is_feasible(const TSPdata* const tspdata, const int* const tour) {
   int k, n, *visited, flag = 1, num_visited = 0;
   n = tspdata->n;
   visited = (int*)malloc_e(n * sizeof(int));

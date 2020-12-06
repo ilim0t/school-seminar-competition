@@ -47,7 +47,8 @@ int main(int argc, char* argv[]) {
   of the tour. where i,k = 0,1,...,n-1.
 
   *****/
-  my_algorithm(&param, &tspdata, &vdata);
+  nearest_neighbor(&param, &tspdata, &vdata);
+  // my_algorithm(&param, &tspdata, &vdata);
 
   vdata.endtime = cpu_time();
   recompute_obj(&param, &tspdata, &vdata);

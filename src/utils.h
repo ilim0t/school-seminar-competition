@@ -62,9 +62,9 @@ void read_tspfile(FILE* in, TSPdata* tspdata, Vdata* vdata);
 void read_tourfile(FILE* in, TSPdata* tspdata, int* tour);
 void output_tour(FILE* out, TSPdata* tspdata, int* tour);
 void output_tour_for_tsp_view(FILE* out, TSPdata* tspdata, int* tour);
-void recompute_obj(Param* param, TSPdata* tspdata, Vdata* vdata);
-void my_algorithm(Param* param, TSPdata* tspdata, Vdata* vdata);
-
+void recompute_obj(const Param* param,
+                   const TSPdata* const tspdata,
+                   const Vdata* const vdata);
 int compute_distance(double x1, double y1, double x2, double y2);
-int compute_cost(TSPdata* tspdata, int* tour);
-int is_feasible(TSPdata* tspdata, int* tour);
+int compute_cost(const TSPdata* const tspdata, const int* const tour);
+int is_feasible(const TSPdata* const tspdata, const int* const tour);
