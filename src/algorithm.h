@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+// #define DEBUG 1
+
 void greedy_algorithm(const Param* const param,
                       const TSPdata* const tspdata,
                       Vdata* const vdata);
@@ -25,8 +27,8 @@ void insertion_algorithm(const Param* const param,
                          Vdata* const vdata);
 
 void two_approximation_algorithm(const Param* const param,
-                       const TSPdata* const tspdata,
-                       Vdata* const vdata);
+                                 const TSPdata* const tspdata,
+                                 Vdata* const vdata);
 
 int compute_min_upper_spanning_tree_kruskals(
     const TSPdata* const tspdata,

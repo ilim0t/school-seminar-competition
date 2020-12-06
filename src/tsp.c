@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
 
   vdata.timebrid = cpu_time();
   copy_parameters(argc, argv, &param);
-  FILE* fp = fopen("../data/test.tsp", "r");
+  FILE* fp = fopen("../data/d657.tsp", "r");
   read_tspfile(fp, &tspdata, &vdata);
   if (param.givesol == 1)
     read_tourfile(fp, &tspdata, vdata.bestsol);
