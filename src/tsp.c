@@ -1,7 +1,9 @@
+#include "algorithm.h"
 #include "cpu_time.h"
 #include "utils.h"
 
 #include <stdlib.h>
+#include <time.h>
 
 int main(int argc, char* argv[]) {
   Param param;     /* parameters */
@@ -47,8 +49,16 @@ int main(int argc, char* argv[]) {
   of the tour. where i,k = 0,1,...,n-1.
 
   *****/
-  nearest_neighbor(&param, &tspdata, &vdata);
-  // my_algorithm(&param, &tspdata, &vdata);
+  struct timespec ts;
+  if (timespec_get(&ts, TIME_UTC) == 0) {
+    printf("error");
+  } else {
+    srandom(ts.tv_nsec ^ ts.tv_sec);
+  }
+
+  // nearest_neighbor_algorithm(&param, &tspdata, &vdata);
+  // insertion_algorithm(&param, &tspdata, &vdata);
+  // two_approximation_algorithm(&param, &tspdata, &vdata);
 
   vdata.endtime = cpu_time();
   recompute_obj(&param, &tspdata, &vdata);
