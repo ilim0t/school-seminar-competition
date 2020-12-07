@@ -78,10 +78,9 @@ void two_opt(int n_nodes,
       best_tour[tour_idx] = new_tour[tour_idx];
     }
 #if DEBUG
-    printf("\n[UPDATE] (reduces_cost=%d)\n", reduces_cost);
-    print_tour(n_nodes, x_coords, y_coords, best_tour);
+    printf("\n[UPDATE] two_opt(reduces_cost=%d)\n", reduces_cost);
+    print_tour(n_nodes, n_min_nodes, x_coords, y_coords, best_tour);
     printf("\n");
-    printf(" ");
 #endif
   }
 }

@@ -84,15 +84,15 @@ void two_opt(int n_nodes,
              int best_tour[n_nodes]);
 
 void three_opt_algorithm(const Param* const param,
-                       const TSPdata* const tspdata,
-                       Vdata* const vdata);
+                         const TSPdata* const tspdata,
+                         Vdata* const vdata);
 
 void three_opt(int n_nodes,
-             int n_min_nodes,
-             double timelim,
-             double x_coords[n_nodes],
-             double y_coords[n_nodes],
-             int best_tour[n_nodes]);
+               int n_min_nodes,
+               double timelim,
+               double x_coords[n_nodes],
+               double y_coords[n_nodes],
+               int best_tour[n_nodes]);
 
 void shaker_sort(int n, int array[n][3]);
 
@@ -103,7 +103,10 @@ int my_compute_tour_cost(int n,
                          double y_coords[],
                          const int* const tour);
 
+bool my_is_feasible(int n, int min_node_num, const int tour[n]);
+
 void print_tour(int n,
+                int min_node_num,
                 double x_coords[n],
                 double y_coords[n],
                 const int* const tour);

@@ -47,7 +47,8 @@ void greedy_depth_first_search(
       if (cost < *min_cost) {
 #ifdef DEBUG
         printf("[UPDATE!]\n");
-        print_tour(tspdata->n, tspdata->x, tspdata->y, local_tour);
+        print_tour(tspdata->n, tspdata->min_node_num, tspdata->x, tspdata->y,
+                   local_tour);
 #endif
         *min_cost = cost;
         for (int tour_idx = 0; tour_idx <= tspdata->min_node_num; tour_idx++) {

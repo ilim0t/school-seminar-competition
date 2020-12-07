@@ -29,7 +29,9 @@ void three_opt(int n_nodes,
                int best_tour[n_nodes]) {
   double starttime = cpu_time();
 
+  int debug_i = 0;
   while (cpu_time() - starttime < timelim) {
+    debug_i++;
     int a_tour_idx, b_tour_idx, c_tour_idx;
     while (true) {
       a_tour_idx = rand() % n_min_nodes;
@@ -74,7 +76,7 @@ void three_opt(int n_nodes,
 
     new_costs[2] = my_dist(x_coords, y_coords, b_node, f_node) +
                    my_dist(x_coords, y_coords, a_node, e_node) +
-                   my_dist(x_coords, y_coords, c_node, a_node);
+                   my_dist(x_coords, y_coords, c_node, d_node);
 
     new_costs[3] = my_dist(x_coords, y_coords, b_node, f_node) +
                    my_dist(x_coords, y_coords, a_node, c_node) +
@@ -83,13 +85,13 @@ void three_opt(int n_nodes,
     int min_cost_idx;
     int min_new_cost = INT_MAX;
     for (int i = 0; i < 4; i++) {
-      if (min_new_cost < new_costs[i]) {
+      if (new_costs[i] < min_new_cost) {
         min_new_cost = new_costs[i];
         min_cost_idx = i;
       }
     }
 
-    const int reduces_cost = min_new_cost - oririnal_cost;
+    const int reduces_cost = oririnal_cost - min_new_cost;
     if (reduces_cost <= 0) {
       continue;
     }
@@ -108,7 +110,7 @@ void three_opt(int n_nodes,
       new_tour_idx++;
     }
 
-    new_tour[new_tour_idx] = b_tour_idx;
+    new_tour[new_tour_idx] = b_node;
     new_tour_idx++;
 
     if (min_cost_idx == 0) {
@@ -170,16 +172,19 @@ void three_opt(int n_nodes,
           new_tour[new_tour_idx] = best_tour[tour_idx];
           new_tour_idx++;
         }
-        new_tour[new_tour_idx] = c_node;
+        new_tour[new_tour_idx] = e_node;
         // new_tour_idx++;
       }
     }
 
+    for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
+      best_tour[tour_idx] = new_tour[tour_idx];
+    }
+
 #if DEBUG
-    printf("\n[UPDATE] (reduces_cost=%d)\n", reduces_cost);
-    print_tour(n_nodes, x_coords, y_coords, best_tour);
+    printf("\n [UPDATE] three_opt (reduces_cost=%d)\n", reduces_cost);
+    print_tour(n_nodes, n_min_nodes, x_coords, y_coords, best_tour);
     printf("\n");
-    printf(" ");
 #endif
   }
 }

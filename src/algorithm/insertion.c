@@ -24,6 +24,9 @@ int insertion(int n_nodes,
               int best_tour[n_nodes]) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
+  if (my_is_feasible(n_min_nodes, n_min_nodes, best_tour)) {
+    min_cost = my_compute_tour_cost(n_nodes, x_coords, y_coords, best_tour);
+  }
 
   while (cpu_time() - starttime < timelim) {
     bool is_visiteds[n_nodes];
@@ -80,8 +83,8 @@ int insertion(int n_nodes,
     if (cost < min_cost) {
       min_cost = cost;
 #ifdef DEBUG
-      printf("\n[UPDATE min_cost]\n");
-      print_tour(n_nodes, x_coords, y_coords, local_tour);
+      printf("\n[UPDATE] insertion\n");
+      print_tour(n_nodes, n_min_nodes, x_coords, y_coords, local_tour);
 #endif
 
       for (int tour_idx = 0; tour_idx < n_nodes; tour_idx++) {

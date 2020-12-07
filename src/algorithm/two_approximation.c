@@ -240,7 +240,8 @@ void stroke_depth_first_search(
   (*local_tour_idx)++;
 #ifdef DEBUG
   printf("[UPDATE!]\n");
-  print_tour(tspdata->n, tspdata->x, tspdata->y, local_tour);
+  print_tour(tspdata->n, tspdata->min_node_num, tspdata->x, tspdata->y,
+             local_tour);
 #endif
 
   for (int temp_next_node = 0; temp_next_node < tspdata->n; temp_next_node++) {
