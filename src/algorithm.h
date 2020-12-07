@@ -32,6 +32,13 @@ void insertion_algorithm(const Param* const param,
                          const TSPdata* const tspdata,
                          Vdata* const vdata);
 
+int insertion(int n_nodes,
+              int n_min_nodes,
+              double timelim,
+              double x_coords[n_nodes],
+              double y_coords[n_nodes],
+              int best_tour[n_nodes]);
+
 void two_approximation_algorithm(const Param* const param,
                                  const TSPdata* const tspdata,
                                  Vdata* const vdata);

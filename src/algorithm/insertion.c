@@ -8,29 +8,43 @@
 void insertion_algorithm(const Param* const param,
                          const TSPdata* const tspdata,
                          Vdata* const vdata) {
+  for (int i = 0; i < tspdata->n; i++) {
+    vdata->bestsol[i] = -1;
+  }
+
+  insertion(tspdata->n, tspdata->min_node_num, param->timelim, tspdata->x,
+            tspdata->y, vdata->bestsol);
+}
+
+int insertion(int n_nodes,
+              int n_min_nodes,
+              double timelim,
+              double x_coords[n_nodes],
+              double y_coords[n_nodes],
+              int best_tour[n_nodes]) {
+  double starttime = cpu_time();
   int min_cost = INT_MAX;
 
-  while (cpu_time() - vdata->starttime < param->timelim) {
-    bool is_visiteds[tspdata->n];
-    int local_tour[tspdata->n];
-    for (int i = 0; i < tspdata->n; i++) {
+  while (cpu_time() - starttime < timelim) {
+    bool is_visiteds[n_nodes];
+    int local_tour[n_nodes];
+    for (int i = 0; i < n_nodes; i++) {
       is_visiteds[i] = false;
       local_tour[i] = -1;
     }
 
-    const int first_node = rand() % tspdata->n;
+    const int first_node = rand() % n_nodes;
     local_tour[0] = first_node;
     is_visiteds[first_node] = true;
 
     // int insert_location;
-    for (int depth = 1; depth < tspdata->min_node_num;
+    for (int depth = 1; depth < n_min_nodes;
          depth++) {  // bestsol[depth]を設定する
       int min_cost_diff = INT_MAX;
       int next_node;
       int insert_loc;
 
-      for (int temp_next_node = 0; temp_next_node < tspdata->n;
-           temp_next_node++) {
+      for (int temp_next_node = 0; temp_next_node < n_nodes; temp_next_node++) {
         if (is_visiteds[temp_next_node]) {
           continue;
         }
@@ -39,9 +53,11 @@ void insertion_algorithm(const Param* const param,
              temp_insert_loc++) {  // insert_location: sliceで使うものと一緒
           const int previous_node = local_tour[temp_insert_loc - 1];
           const int following_node = local_tour[temp_insert_loc % depth];
-          const int cost_diff = dist(previous_node, temp_next_node) +
-                                dist(temp_next_node, following_node) -
-                                dist(previous_node, following_node);
+
+          const int cost_diff =
+              my_dist(x_coords, y_coords, previous_node, temp_next_node) +
+              my_dist(x_coords, y_coords, temp_next_node, following_node) -
+              my_dist(x_coords, y_coords, previous_node, following_node);
           if (cost_diff < min_cost_diff) {
             min_cost_diff = cost_diff;
 
@@ -57,23 +73,19 @@ void insertion_algorithm(const Param* const param,
       }
       local_tour[insert_loc] = next_node;
       is_visiteds[next_node] = true;
-
-      // #ifdef DEBUG
-      //       printf("[UPDATE!]\n");
-      //       print_tour(tspdata->n, tspdata->x, tspdata->y, vdata->bestsol);
-      // #endif
     }
 
-    const int cost = compute_cost(tspdata, local_tour);
+    const int cost =
+        my_compute_tour_cost(n_nodes, x_coords, y_coords, local_tour);
     if (cost < min_cost) {
       min_cost = cost;
 #ifdef DEBUG
-      printf("[UPDATE!]\n");
-      print_tour(tspdata->n, tspdata->x, tspdata->y, local_tour);
+      printf("\n[UPDATE!]\n");
+      print_tour(n_nodes, x_coords, y_coords, local_tour);
 #endif
 
-      for (int tour_idx = 0; tour_idx < tspdata->n; tour_idx++) {
-        vdata->bestsol[tour_idx] = local_tour[tour_idx];
+      for (int tour_idx = 0; tour_idx < n_nodes; tour_idx++) {
+        best_tour[tour_idx] = local_tour[tour_idx];
       }
     }
   }

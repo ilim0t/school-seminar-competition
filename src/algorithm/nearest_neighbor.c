@@ -8,13 +8,12 @@
 void nearest_neighbor_algorithm(const Param* const param,
                                 const TSPdata* const tspdata,
                                 Vdata* const vdata) {
-  int best_tour[tspdata->n];
   for (int i = 0; i < tspdata->n; i++) {
-    best_tour[i] = -1;
+    vdata->bestsol[i] = -1;
   }
 
   nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim,
-                   tspdata->x, tspdata->y, best_tour);
+                   tspdata->x, tspdata->y, vdata->bestsol);
 }
 
 void nearest_neighbor(int n_nodes,

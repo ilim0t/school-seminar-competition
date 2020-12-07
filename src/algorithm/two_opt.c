@@ -13,6 +13,8 @@ void two_opt_algorithm(const Param* const param,
   }
   nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim * 0.1,
                    tspdata->x, tspdata->y, vdata->bestsol);
+  insertion(tspdata->n, tspdata->min_node_num, param->timelim * 0.1, tspdata->x,
+            tspdata->y, vdata->bestsol);
 
 #if DEBUG
   printf("\nnearest_neighbor\n");
