@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-// #define DEBUG 1
+#define DEBUG 1
 
 void greedy_algorithm(const Param* const param,
                       const TSPdata* const tspdata,
@@ -75,6 +75,24 @@ void stroke_depth_first_search(int root_node,
 void two_opt_algorithm(const Param* const param,
                        const TSPdata* const tspdata,
                        Vdata* const vdata);
+
+void two_opt(int n_nodes,
+             int n_min_nodes,
+             double timelim,
+             double x_coords[n_nodes],
+             double y_coords[n_nodes],
+             int best_tour[n_nodes]);
+
+void three_opt_algorithm(const Param* const param,
+                       const TSPdata* const tspdata,
+                       Vdata* const vdata);
+
+void three_opt(int n_nodes,
+             int n_min_nodes,
+             double timelim,
+             double x_coords[n_nodes],
+             double y_coords[n_nodes],
+             int best_tour[n_nodes]);
 
 void shaker_sort(int n, int array[n][3]);
 

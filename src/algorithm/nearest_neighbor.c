@@ -60,7 +60,7 @@ void nearest_neighbor(int n_nodes,
     if (cost < min_cost) {
       min_cost = cost;
 #ifdef DEBUG
-      printf("\n[UPDATE!]\n");
+      printf("\n[UPDATE min_cost]\n");
       print_tour(n_nodes, x_coords, y_coords, local_tour);
 #endif
 

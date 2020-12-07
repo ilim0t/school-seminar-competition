@@ -22,7 +22,7 @@ void two_approximation_algorithm(const Param* const param,
       tspdata, adjacency_mat, edge_dists);
   prune_upper_spanning_tree(n_node_spanning_tree - tspdata->min_node_num,
                             tspdata, adjacency_mat);
-#if DEBUG
+#if DEBUG2
   printf("[PRUNNED ADJACENCY MATRIX]\n");
   for (int i = 0; i < tspdata->n; i++) {
     for (int j = 0; j < tspdata->n; j++) {
@@ -108,7 +108,7 @@ int compute_min_upper_spanning_tree_kruskals(
 
     n_node_spanning_tree++;
 
-#if DEBUG
+#if DEBUG2
     printf("iter=%d (n_node_spanning_tree=%d)\n", iter, n_node_spanning_tree);
     for (int i = 0; i < tspdata->n; i++) {
       for (int j = 0; j < tspdata->n; j++) {

@@ -58,13 +58,18 @@ void print_tour(int n,
                 double x_coords[n],
                 double y_coords[n],
                 const int* const tour) {
-  printf("%d:\t", my_compute_tour_cost(n, x_coords, y_coords, tour));
+  printf("cost: %d\n", my_compute_tour_cost(n, x_coords, y_coords, tour));
+
+  printf("tour: ");
   int i;
   for (i = 0; i < n; i++) {
     if (tour[i] < 0) {
       break;
     }
-    printf("%d, ", tour[i]);
+    if (i != 0) {
+      printf(", ");
+    }
+    printf("%d", tour[i]);
   }
 
   printf("\nlength: %d\n", i);
