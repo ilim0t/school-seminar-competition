@@ -13,8 +13,8 @@ void three_opt_algorithm(const Param* const param,
   }
   nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim * 0.1,
                    tspdata->x, tspdata->y, vdata->bestsol);
-  insertion(tspdata->n, tspdata->min_node_num, param->timelim * 0.1, tspdata->x,
-            tspdata->y, vdata->bestsol);
+  // insertion(tspdata->n, tspdata->min_node_num, param->timelim * 0.1,
+  // tspdata->x, tspdata->y, vdata->bestsol);
 
   three_opt(tspdata->n, tspdata->min_node_num,
             param->timelim - cpu_time() - vdata->starttime, tspdata->x,

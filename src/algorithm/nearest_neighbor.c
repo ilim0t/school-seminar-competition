@@ -24,7 +24,7 @@ void nearest_neighbor(int n_nodes,
                       int best_tour[n_nodes]) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
-  if (my_is_feasible(n_min_nodes, n_min_nodes, best_tour)) {
+  if (my_is_feasible(n_nodes, n_min_nodes, best_tour)) {
     min_cost = my_compute_tour_cost(n_nodes, x_coords, y_coords, best_tour);
   }
 

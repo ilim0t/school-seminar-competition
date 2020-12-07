@@ -5,33 +5,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-void swap(int a[3], int b[3]) {
-  for (int i = 0; i < 3; i++) {
-    int temp = a[i];
-    a[i] = b[i];
-    b[i] = temp;
-  }
-}
-
-void shaker_sort(int n, int array[n][3]) {
-  for (int i = 0; i < n; i++) {
-    // head to tail
-    for (int j = i + 1; j < n; j++) {
-      if (array[j][0] < array[j - 1][0]) {
-        swap(array[j], array[j - 1]);
-      }
-    }
-    n--;
-
-    // tail to head
-    for (int k = n - 1; k > i; k--) {
-      if (array[k][0] < array[k - 1][0]) {
-        swap(array[k], array[k - 1]);
-      }
-    }
-  }
-}
-
 int my_dist(double x_coords[], double y_coords[], int i, int j) {
   return sqrt((x_coords[i] - x_coords[j]) * (x_coords[i] - x_coords[j]) +
               (y_coords[i] - y_coords[j]) * (y_coords[i] - y_coords[j])) +
@@ -114,5 +87,54 @@ void print_tour(int n,
   }
 
   printf("\nlength: %d\n", i);
+  printf("time: %f\n", cpu_time());
   printf("is_feasible: %d\n", my_is_feasible(n, min_node_num, tour));
+}
+
+int** const int_d2array(int row, int column) {
+  int** const array = malloc(sizeof(int*) * row);
+  if (array == NULL) {
+    printf("メモリが確保できません\n");
+    exit(1);
+  }
+
+  for (int i = 0; i < row; i++) {
+    array[i] = malloc(sizeof(int) * column);
+    if (array[i] == NULL) {
+      printf("d2array[0]メモリが確保できません\n");
+      exit(1);
+    }
+  }
+  return array;
+}
+
+void int_d2free(int** array, int row) {
+  for (int i = 0; i < row; i++) {
+    free(array[i]);
+  }
+  free(array);
+}
+
+bool** bool_d2array(int row, int column) {
+  bool** array = malloc(sizeof(bool*) * row);
+  if (array == NULL) {
+    printf("メモリが確保できません\n");
+    exit(1);
+  }
+
+  for (int i = 0; i < row; i++) {
+    array[i] = malloc(sizeof(bool) * column);
+    if (array[i] == NULL) {
+      printf("d2array[0]メモリが確保できません\n");
+      exit(1);
+    }
+  }
+  return array;
+}
+
+void bool_d2free(bool** array, int row) {
+  for (int i = 0; i < row; i++) {
+    free(array[i]);
+  }
+  free(array);
 }
