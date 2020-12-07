@@ -60,7 +60,7 @@ void insertion_algorithm(const Param* const param,
 
       // #ifdef DEBUG
       //       printf("[UPDATE!]\n");
-      //       print_tour(vdata->bestsol, tspdata);
+      //       print_tour(tspdata->n, tspdata->x, tspdata->y, vdata->bestsol);
       // #endif
     }
 
@@ -69,7 +69,7 @@ void insertion_algorithm(const Param* const param,
       min_cost = cost;
 #ifdef DEBUG
       printf("[UPDATE!]\n");
-      print_tour(local_tour, tspdata);
+      print_tour(tspdata->n, tspdata->x, tspdata->y, local_tour);
 #endif
 
       for (int tour_idx = 0; tour_idx < tspdata->n; tour_idx++) {

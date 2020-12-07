@@ -32,14 +32,40 @@ void shaker_sort(int n, int array[n][3]) {
   }
 }
 
-void print_tour(const int* const local_tour, const TSPdata* const tspdata) {
-  printf("%d:\t", compute_cost(tspdata, local_tour));
-  for (int i = 0; i < tspdata->n; i++) {
-    if (local_tour[i] < 0) {
+int my_dist(double x_coords[], double y_coords[], int i, int j) {
+  return sqrt((x_coords[i] - x_coords[j]) * (x_coords[i] - x_coords[j]) +
+              (y_coords[i] - y_coords[j]) * (y_coords[i] - y_coords[j])) +
+         0.5;
+}
+
+int my_compute_tour_cost(int n,
+                         double x_coords[],
+                         double y_coords[],
+                         const int* const tour) {
+  int tour_idx, cost = 0;
+
+  for (tour_idx = 0; tour_idx < n - 1; tour_idx++) {
+    if (tour[tour_idx + 1] < 0) {
       break;
     }
-    printf("%d, ", local_tour[i]);
+    cost += my_dist(x_coords, y_coords, tour[tour_idx], tour[tour_idx + 1]);
+  }
+  cost += my_dist(x_coords, y_coords, tour[tour_idx], tour[0]);
+  return cost;
+}
+
+void print_tour(int n,
+                double x_coords[n],
+                double y_coords[n],
+                const int* const tour) {
+  printf("%d:\t", my_compute_tour_cost(n, x_coords, y_coords, tour));
+  int i;
+  for (i = 0; i < n; i++) {
+    if (tour[i] < 0) {
+      break;
+    }
+    printf("%d, ", tour[i]);
   }
 
-  printf("\n");
+  printf("\nlength: %d\n", i);
 }
