@@ -11,10 +11,8 @@ void two_opt_algorithm(const Param* const param,
   for (int i = 0; i < tspdata->n; i++) {
     vdata->bestsol[i] = -1;
   }
-  nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim * 0.1,
+  nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim * 0.2,
                    tspdata->x, tspdata->y, vdata->bestsol);
-  insertion(tspdata->n, tspdata->min_node_num, param->timelim * 0.1, tspdata->x,
-            tspdata->y, vdata->bestsol);
 
   two_opt(tspdata->n, tspdata->min_node_num,
           param->timelim - cpu_time() - vdata->starttime, tspdata->x,
@@ -42,11 +40,11 @@ void two_opt(int n_nodes,
     const int c_node = best_tour[c_tour_idx];
     const int d_node = best_tour[d_tour_idx];
 
-    const int reduces_cost = my_dist(x_coords, y_coords, a_node, c_node) +
+    const int reduced_cost = my_dist(x_coords, y_coords, a_node, c_node) +
                              my_dist(x_coords, y_coords, b_node, d_node) -
                              my_dist(x_coords, y_coords, a_node, b_node) -
                              my_dist(x_coords, y_coords, c_node, d_node);
-    if (reduces_cost <= 0) {
+    if (reduced_cost <= 0) {
       continue;
     }
 
@@ -78,7 +76,7 @@ void two_opt(int n_nodes,
       best_tour[tour_idx] = new_tour[tour_idx];
     }
 #if DEBUG
-    printf("\n[UPDATE] two_opt(reduces_cost=%d)\n", reduces_cost);
+    printf("\n[UPDATE] two_opt(reduced_cost=%d)\n", reduced_cost);
     print_tour(n_nodes, n_min_nodes, x_coords, y_coords, best_tour);
     printf("\n");
 #endif

@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 
 void three_opt_algorithm(const Param* const param,
                          const TSPdata* const tspdata,
@@ -11,14 +12,30 @@ void three_opt_algorithm(const Param* const param,
   for (int i = 0; i < tspdata->n; i++) {
     vdata->bestsol[i] = -1;
   }
-  nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim * 0.1,
-                   tspdata->x, tspdata->y, vdata->bestsol);
-  // insertion(tspdata->n, tspdata->min_node_num, param->timelim * 0.1,
-  // tspdata->x, tspdata->y, vdata->bestsol);
 
-  three_opt(tspdata->n, tspdata->min_node_num,
-            param->timelim - cpu_time() - vdata->starttime, tspdata->x,
-            tspdata->y, vdata->bestsol);
+  nearest_neighbor(tspdata->n, tspdata->min_node_num,
+                   (param->timelim - cpu_time() + vdata->starttime) * 0.1,
+                   tspdata->x, tspdata->y, vdata->bestsol);
+
+  const double iter_tim_lim =
+      (param->timelim - cpu_time() + vdata->starttime) / 20;
+
+  while (cpu_time() - vdata->starttime < param->timelim) {
+    if (tspdata->n > tspdata->min_node_num) {
+      replace(tspdata->n, tspdata->min_node_num,
+              fmin(iter_tim_lim / 4,
+                   param->timelim - cpu_time() + vdata->starttime),
+              tspdata->x, tspdata->y, vdata->bestsol);
+    }
+    two_opt(
+        tspdata->n, tspdata->min_node_num,
+        fmin(iter_tim_lim / 2, param->timelim - cpu_time() + vdata->starttime),
+        tspdata->x, tspdata->y, vdata->bestsol);
+    three_opt(
+        tspdata->n, tspdata->min_node_num,
+        fmin(iter_tim_lim / 4, param->timelim - cpu_time() + vdata->starttime),
+        tspdata->x, tspdata->y, vdata->bestsol);
+  }
 }
 
 void three_opt(int n_nodes,
@@ -29,9 +46,7 @@ void three_opt(int n_nodes,
                int best_tour[n_nodes]) {
   double starttime = cpu_time();
 
-  int debug_i = 0;
   while (cpu_time() - starttime < timelim) {
-    debug_i++;
     int a_tour_idx, b_tour_idx, c_tour_idx;
     while (true) {
       a_tour_idx = rand() % n_min_nodes;
@@ -91,8 +106,8 @@ void three_opt(int n_nodes,
       }
     }
 
-    const int reduces_cost = oririnal_cost - min_new_cost;
-    if (reduces_cost <= 0) {
+    const int reduced_cost = oririnal_cost - min_new_cost;
+    if (reduced_cost <= 0) {
       continue;
     }
 
@@ -182,7 +197,7 @@ void three_opt(int n_nodes,
     }
 
 #if DEBUG
-    printf("\n [UPDATE] three_opt (reduces_cost=%d)\n", reduces_cost);
+    printf("\n[UPDATE] three_opt (reduced_cost=%d)\n", reduced_cost);
     print_tour(n_nodes, n_min_nodes, x_coords, y_coords, best_tour);
     printf("\n");
 #endif
