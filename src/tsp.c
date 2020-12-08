@@ -12,7 +12,14 @@ int main(int argc, char* argv[]) {
 
   vdata.timebrid = cpu_time();
   copy_parameters(argc, argv, &param);
-  FILE* fp = fopen("../data/a280.tsp", "r");
+  // FILE* fp = fopen("../data/d18512.tsp", "r");
+  // FILE* fp = fopen("../data/fnl4461.tsp", "r");
+  // FILE* fp = fopen("../data/nrw1379.tsp", "r");
+  // FILE* fp = fopen("../data/d1291.tsp", "r");
+  FILE* fp = fopen("../data/d657.tsp", "r");
+  // FILE* fp = fopen("../data/ch150.tsp", "r");
+  // FILE* fp = fopen("../data/eil51.tsp", "r");
+  // FILE* fp = fopen("../data/test.tsp", "r");
   // FILE* fp = stdin;
   read_tspfile(fp, &tspdata, &vdata);
   if (param.givesol == 1)
@@ -57,11 +64,7 @@ int main(int argc, char* argv[]) {
   //   srandom(ts.tv_nsec ^ ts.tv_sec);
   // }
 
-  // new_greedy_algorithm(&param, &tspdata, &vdata);
-  // nearest_neighbor_algorithm(&param, &tspdata, &vdata);
-  insertion_algorithm(&param, &tspdata, &vdata);
-  // two_approximation_algorithm(&param, &tspdata, &vdata);
-  // two_opt_algorithm(&param, &tspdata, &vdata);
+  my_algorithm(&param, &tspdata, &vdata);
 
   vdata.endtime = cpu_time();
   recompute_obj(&param, &tspdata, &vdata);

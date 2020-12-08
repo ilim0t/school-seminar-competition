@@ -18,6 +18,7 @@
 
 #include <limits.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,6 +87,12 @@ void output_tour(FILE* out, TSPdata* tspdata, int* tour);
 void output_tour_for_tsp_view(FILE* out, TSPdata* tspdata, int* tour);
 void recompute_obj(Param* param, TSPdata* tspdata, Vdata* vdata);
 void my_algorithm(Param* param, TSPdata* tspdata, Vdata* vdata);
+void nearest_neighbor(TSPdata* tspdata,
+                      const double timelim,
+                      int best_tour[tspdata->n]);
+void replace(TSPdata* tspdata, const double timelim, int best_tour[tspdata->n]);
+void two_opt(TSPdata* tspdata, double timelim, int best_tour[tspdata->n]);
+void three_opt(TSPdata* tspdata, double timelim, int best_tour[tspdata->n]);
 
 int compute_distance(double x1, double y1, double x2, double y2);
 int compute_cost(TSPdata* tspdata, int* tour);
@@ -363,16 +370,398 @@ int is_feasible(TSPdata* tspdata, int* tour) {
 
 /***** sample algorithm ******************************************************/
 void my_algorithm(Param* param, TSPdata* tspdata, Vdata* vdata) {
-  int i, tmp;
-
-  for (i = 0; i < tspdata->n; i++) {
-    vdata->bestsol[i] = i;
+  for (int i = 0; i < tspdata->n; i++) {
+    vdata->bestsol[i] = -1;
   }
+
+  nearest_neighbor(tspdata,
+                   (param->timelim - cpu_time() + vdata->starttime) * 0.1,
+                   vdata->bestsol);
+
+  const double iter_tim_lim =
+      (param->timelim - cpu_time() + vdata->starttime) / 20;
+
   while (cpu_time() - vdata->starttime < param->timelim) {
-    for (i = 0; i < tspdata->n; i++) {
-      tmp = vdata->bestsol[i];
-      vdata->bestsol[i] = vdata->bestsol[(i + 1) % (tspdata->n)];
-      vdata->bestsol[(i + 1) % (tspdata->n)] = tmp;
+    if (tspdata->n > tspdata->min_node_num) {
+      replace(tspdata,
+              fmin(iter_tim_lim / 4,
+                   param->timelim - cpu_time() + vdata->starttime),
+              vdata->bestsol);
+    }
+    two_opt(
+        tspdata,
+        fmin(iter_tim_lim / 2, param->timelim - cpu_time() + vdata->starttime),
+        vdata->bestsol);
+    three_opt(
+        tspdata,
+        fmin(iter_tim_lim / 4, param->timelim - cpu_time() + vdata->starttime),
+        vdata->bestsol);
+  }
+}
+
+void nearest_neighbor(TSPdata* tspdata,
+                      const double timelim,
+                      int best_tour[tspdata->n]) {
+  const int n_nodes = tspdata->n;
+  const int n_min_nodes = tspdata->min_node_num;
+
+  double starttime = cpu_time();
+  int min_cost = INT_MAX;
+  if (is_feasible(tspdata, best_tour)) {
+    min_cost = compute_cost(tspdata, best_tour);
+  }
+
+  while (cpu_time() - starttime < timelim) {
+    bool is_visiteds[n_nodes];
+    int local_tour[n_nodes];
+    for (int i = 0; i < n_nodes; i++) {
+      is_visiteds[i] = false;
+      local_tour[i] = -1;
+    }
+
+    const int first_node = rand() % n_nodes;
+    local_tour[0] = first_node;
+    is_visiteds[first_node] = true;
+
+    for (int depth = 1; depth < n_min_nodes; depth++) {
+      int nearest_cost = INT_MAX;
+
+      for (int temp_next_node = 0; temp_next_node < n_nodes; temp_next_node++) {
+        if (is_visiteds[temp_next_node]) {
+          continue;
+        }
+
+        const int cost = dist(local_tour[depth - 1], temp_next_node);
+        if (cost < nearest_cost) {
+          nearest_cost = cost;
+          local_tour[depth] = temp_next_node;
+        }
+      }
+      is_visiteds[local_tour[depth]] = true;
+    }
+
+    const int cost = compute_cost(tspdata, local_tour);
+    if (cost < min_cost) {
+      min_cost = cost;
+      for (int tour_idx = 0; tour_idx < n_nodes; tour_idx++) {
+        best_tour[tour_idx] = local_tour[tour_idx];
+      }
+    }
+  }
+}
+
+void replace(TSPdata* tspdata,
+             const double timelim,
+             int best_tour[tspdata->n]) {
+  const int n_nodes = tspdata->n;
+  const int n_min_nodes = tspdata->min_node_num;
+
+  double starttime = cpu_time();
+  int min_cost = INT_MAX;
+  if (is_feasible(tspdata, best_tour)) {
+    min_cost = compute_cost(tspdata, best_tour);
+  }
+
+  int local_tour[n_nodes];
+  for (int i = 0; i < n_nodes; i++) {
+    local_tour[i] = best_tour[i];
+  }
+
+  while (cpu_time() - starttime < timelim) {
+    int delete_node_idx_in_tour;
+    int insert_node;
+    int insert_idx;
+
+    while (true) {
+      delete_node_idx_in_tour = rand() % n_min_nodes;
+      insert_node = rand() % n_nodes;
+      insert_idx = rand() % n_min_nodes;
+
+      if ((delete_node_idx_in_tour + 1) % n_min_nodes == insert_idx) {
+        continue;
+      }
+      bool is_visited = false;
+      for (int i = 0; i < n_min_nodes; ++i) {
+        if (local_tour[i] == insert_node) {
+          is_visited = true;
+          break;
+        }
+      }
+      if (!is_visited) {
+        break;
+      }
+    }
+
+    const int delete_node = local_tour[delete_node_idx_in_tour];
+
+    int reduced_dist;
+    const int pre_insert =
+        local_tour[insert_idx == 0 ? n_min_nodes - 1 : insert_idx - 1];
+    const int following_insert =
+        local_tour[insert_idx == delete_node_idx_in_tour
+                       ? (insert_idx + 1) % n_min_nodes
+                       : insert_idx];
+
+    const int pre_delete =
+        local_tour[delete_node_idx_in_tour == 0 ? n_min_nodes - 1
+                                                : delete_node_idx_in_tour - 1];
+    const int following_delete =
+        local_tour[(delete_node_idx_in_tour + 1) % n_min_nodes];
+
+    if (insert_idx == delete_node_idx_in_tour) {
+      const int added_dist =
+          dist(pre_insert, insert_node) + dist(insert_node, following_insert);
+      const int delete_dist =
+          dist(pre_delete, delete_node) + dist(delete_node, following_delete);
+
+      reduced_dist = delete_dist - added_dist;
+    } else {
+      const int added_dist = dist(pre_insert, insert_node) +
+                             dist(insert_node, following_insert) -
+                             dist(pre_insert, following_insert);
+      const int delete_dist = dist(pre_delete, delete_node) +
+                              dist(delete_node, following_delete) -
+                              dist(pre_delete, following_delete);
+
+      reduced_dist = delete_dist - added_dist;
+    }
+
+    if (reduced_dist < 0) {
+      continue;
+    }
+
+    int new_tour[n_min_nodes];
+    int new_tour_idx = 0;
+    int old_tour_idx = 0;
+
+    while (new_tour_idx < n_min_nodes) {
+      if (old_tour_idx == insert_idx) {
+        new_tour[new_tour_idx] = insert_node;
+        insert_idx = -1;
+        new_tour_idx++;
+      } else if (old_tour_idx == delete_node_idx_in_tour) {
+        old_tour_idx++;
+      } else {
+        new_tour[new_tour_idx] = local_tour[old_tour_idx];
+        new_tour_idx++;
+        old_tour_idx++;
+      }
+    }
+
+    for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
+      local_tour[tour_idx] = new_tour[tour_idx];
+    }
+
+    for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
+      best_tour[tour_idx] = local_tour[tour_idx];
+    }
+  }
+}
+
+void two_opt(TSPdata* tspdata, double timelim, int best_tour[tspdata->n]) {
+  const int n_nodes = tspdata->n;
+  const int n_min_nodes = tspdata->min_node_num;
+
+  double starttime = cpu_time();
+
+  while (cpu_time() - starttime < timelim) {
+    const int a_tour_idx = rand() % n_min_nodes;
+    const int c_tour_idx = (a_tour_idx + 1) % n_min_nodes;
+
+    const int b_tour_idx =
+        (a_tour_idx + 1 + rand() % (n_min_nodes - 1)) % n_min_nodes;
+    const int d_tour_idx = (b_tour_idx + 1) % n_min_nodes;
+
+    const int a_node = best_tour[a_tour_idx];
+    const int b_node = best_tour[b_tour_idx];
+    const int c_node = best_tour[c_tour_idx];
+    const int d_node = best_tour[d_tour_idx];
+
+    const int reduced_cost = dist(a_node, c_node) + dist(b_node, d_node) -
+                             dist(a_node, b_node) - dist(c_node, d_node);
+    if (reduced_cost <= 0) {
+      continue;
+    }
+
+    int new_tour[n_min_nodes];
+    int new_tour_idx = 0;
+#if DEBUG
+    for (int i = 0; i < n_min_nodes; i++) {
+      new_tour[i] = -1;
+    }
+#endif
+
+    for (int tour_idx = b_tour_idx; tour_idx != c_tour_idx;
+         tour_idx = tour_idx == 0 ? n_min_nodes - 1 : (tour_idx - 1)) {
+      new_tour[new_tour_idx] = best_tour[tour_idx];
+      new_tour_idx++;
+    }
+    new_tour[new_tour_idx] = c_node;
+    new_tour_idx++;
+
+    for (int tour_idx = d_tour_idx; tour_idx != a_tour_idx;
+         tour_idx = (tour_idx + 1) % n_min_nodes) {
+      new_tour[new_tour_idx] = best_tour[tour_idx];
+      new_tour_idx++;
+    }
+    new_tour[new_tour_idx] = a_node;
+    // new_tour_idx++;
+
+    for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
+      best_tour[tour_idx] = new_tour[tour_idx];
+    }
+  }
+}
+
+void three_opt(TSPdata* tspdata, double timelim, int best_tour[tspdata->n]) {
+  const int n_nodes = tspdata->n;
+  const int n_min_nodes = tspdata->min_node_num;
+
+  double starttime = cpu_time();
+
+  while (cpu_time() - starttime < timelim) {
+    int a_tour_idx, b_tour_idx, c_tour_idx;
+    while (true) {
+      a_tour_idx = rand() % n_min_nodes;
+      b_tour_idx = rand() % n_min_nodes;
+      c_tour_idx = rand() % n_min_nodes;
+
+      if (a_tour_idx == b_tour_idx || b_tour_idx == c_tour_idx ||
+          c_tour_idx == a_tour_idx) {
+        continue;
+      } else if ((a_tour_idx < b_tour_idx) + (b_tour_idx < c_tour_idx) +
+                     (c_tour_idx < a_tour_idx) ==
+                 1) {
+        continue;
+      }
+      break;
+    }
+    const int d_tour_idx = (a_tour_idx + 1) % n_min_nodes;
+    const int e_tour_idx = (b_tour_idx + 1) % n_min_nodes;
+    const int f_tour_idx = (c_tour_idx + 1) % n_min_nodes;
+
+    const int a_node = best_tour[a_tour_idx];
+    const int d_node = best_tour[d_tour_idx];
+
+    const int b_node = best_tour[b_tour_idx];
+    const int e_node = best_tour[e_tour_idx];
+
+    const int c_node = best_tour[c_tour_idx];
+    const int f_node = best_tour[f_tour_idx];
+
+    const int oririnal_cost =
+        dist(a_node, d_node) + dist(b_node, e_node) + dist(c_node, f_node);
+
+    int new_costs[4];
+    new_costs[0] =
+        dist(b_node, c_node) + dist(e_node, a_node) + dist(f_node, d_node);
+
+    new_costs[1] =
+        dist(b_node, a_node) + dist(f_node, e_node) + dist(c_node, d_node);
+
+    new_costs[2] =
+        dist(b_node, f_node) + dist(a_node, e_node) + dist(c_node, d_node);
+
+    new_costs[3] =
+        dist(b_node, f_node) + dist(a_node, c_node) + dist(e_node, d_node);
+
+    int min_cost_idx;
+    int min_new_cost = INT_MAX;
+    for (int i = 0; i < 4; i++) {
+      if (new_costs[i] < min_new_cost) {
+        min_new_cost = new_costs[i];
+        min_cost_idx = i;
+      }
+    }
+
+    const int reduced_cost = oririnal_cost - min_new_cost;
+    if (reduced_cost <= 0) {
+      continue;
+    }
+
+    int new_tour[n_min_nodes];
+    int new_tour_idx = 0;
+#if DEBUG
+    for (int i = 0; i < n_min_nodes; i++) {
+      new_tour[i] = -1;
+    }
+#endif
+
+    for (int tour_idx = d_tour_idx; tour_idx != b_tour_idx;
+         tour_idx = (tour_idx + 1) % n_min_nodes) {
+      new_tour[new_tour_idx] = best_tour[tour_idx];
+      new_tour_idx++;
+    }
+
+    new_tour[new_tour_idx] = b_node;
+    new_tour_idx++;
+
+    if (min_cost_idx == 0) {
+      for (int tour_idx = c_tour_idx; tour_idx != e_tour_idx;
+           tour_idx = tour_idx == 0 ? n_min_nodes - 1 : (tour_idx - 1)) {
+        new_tour[new_tour_idx] = best_tour[tour_idx];
+        new_tour_idx++;
+      }
+
+      new_tour[new_tour_idx] = e_node;
+      new_tour_idx++;
+
+      for (int tour_idx = a_tour_idx; tour_idx != f_tour_idx;
+           tour_idx = tour_idx == 0 ? n_min_nodes - 1 : (tour_idx - 1)) {
+        new_tour[new_tour_idx] = best_tour[tour_idx];
+        new_tour_idx++;
+      }
+
+      new_tour[new_tour_idx] = f_node;
+      // new_tour_idx++;
+    } else if (min_cost_idx == 1) {
+      for (int tour_idx = a_tour_idx; tour_idx != f_tour_idx;
+           tour_idx = tour_idx == 0 ? n_min_nodes - 1 : (tour_idx - 1)) {
+        new_tour[new_tour_idx] = best_tour[tour_idx];
+        new_tour_idx++;
+      }
+      new_tour[new_tour_idx] = f_node;
+      new_tour_idx++;
+
+      for (int tour_idx = e_tour_idx; tour_idx != c_tour_idx;
+           tour_idx = (tour_idx + 1) % n_min_nodes) {
+        new_tour[new_tour_idx] = best_tour[tour_idx];
+        new_tour_idx++;
+      }
+
+      new_tour[new_tour_idx] = c_node;
+      // new_tour_idx++;
+    } else {
+      for (int tour_idx = f_tour_idx; tour_idx != a_tour_idx;
+           tour_idx = (tour_idx + 1) % n_min_nodes) {
+        new_tour[new_tour_idx] = best_tour[tour_idx];
+        new_tour_idx++;
+      }
+
+      new_tour[new_tour_idx] = a_node;
+      new_tour_idx++;
+      if (min_cost_idx == 2) {
+        for (int tour_idx = e_tour_idx; tour_idx != c_tour_idx;
+             tour_idx = (tour_idx + 1) % n_min_nodes) {
+          new_tour[new_tour_idx] = best_tour[tour_idx];
+          new_tour_idx++;
+        }
+
+        new_tour[new_tour_idx] = c_node;
+        // new_tour_idx++;
+      } else {
+        for (int tour_idx = c_tour_idx; tour_idx != e_tour_idx;
+             tour_idx = tour_idx == 0 ? n_min_nodes - 1 : (tour_idx - 1)) {
+          new_tour[new_tour_idx] = best_tour[tour_idx];
+          new_tour_idx++;
+        }
+        new_tour[new_tour_idx] = e_node;
+        // new_tour_idx++;
+      }
+    }
+
+    for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
+      best_tour[tour_idx] = new_tour[tour_idx];
     }
   }
 }

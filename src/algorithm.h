@@ -6,6 +6,10 @@
 #define DEBUG 1
 // #define DEBUG 2
 
+void my_algorithm(const Param* const param,
+                  const TSPdata* const tspdata,
+                  Vdata* const vdata);
+
 // greedy.c
 void greedy_algorithm(const Param* const param,
                       const TSPdata* const tspdata,
@@ -74,6 +78,9 @@ void three_opt(int n_nodes,
                double y_coords[n_nodes],
                int best_tour[n_nodes]);
 
+  // repeated_three_opt_algorithm(&param, &tspdata, &vdata);
+  // spanning_subtree_algorithm(&param, &tspdata, &vdata);
+  // replace_algorithm(&param, &tspdata, &vdata);
 // spanning_tree.c
 void compute_weighted_adjacency_mat(const int n_nodes,
                                     double x_coords[n_nodes],

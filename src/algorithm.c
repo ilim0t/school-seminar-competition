@@ -5,6 +5,38 @@
 #include <math.h>
 #include <stdlib.h>
 
+void my_algorithm(const Param* const param,
+                  const TSPdata* const tspdata,
+                  Vdata* const vdata) {
+  for (int i = 0; i < tspdata->n; i++) {
+    vdata->bestsol[i] = -1;
+  }
+
+  nearest_neighbor(tspdata->n, tspdata->min_node_num,
+                   (param->timelim - cpu_time() + vdata->starttime) * 0.1,
+                   tspdata->x, tspdata->y, vdata->bestsol);
+
+  const double iter_tim_lim =
+      (param->timelim - cpu_time() + vdata->starttime) / 20;
+
+  while (cpu_time() - vdata->starttime < param->timelim) {
+    if (tspdata->n > tspdata->min_node_num) {
+      replace(tspdata->n, tspdata->min_node_num,
+              fmin(iter_tim_lim / 4,
+                   param->timelim - cpu_time() + vdata->starttime),
+              tspdata->x, tspdata->y, vdata->bestsol);
+    }
+    two_opt(
+        tspdata->n, tspdata->min_node_num,
+        fmin(iter_tim_lim / 2, param->timelim - cpu_time() + vdata->starttime),
+        tspdata->x, tspdata->y, vdata->bestsol);
+    three_opt(
+        tspdata->n, tspdata->min_node_num,
+        fmin(iter_tim_lim / 4, param->timelim - cpu_time() + vdata->starttime),
+        tspdata->x, tspdata->y, vdata->bestsol);
+  }
+};
+
 int my_dist(double x_coords[], double y_coords[], int i, int j) {
   return sqrt((x_coords[i] - x_coords[j]) * (x_coords[i] - x_coords[j]) +
               (y_coords[i] - y_coords[j]) * (y_coords[i] - y_coords[j])) +
