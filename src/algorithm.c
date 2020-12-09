@@ -22,21 +22,26 @@ void my_algorithm(const Param* const param,
                    (param->timelim - cpu_time() + vdata->starttime) * 0.1,
                    weighted_adjacency_mat, vdata->bestsol);
 
-  const double iter_tim_lim = (param->timelim - cpu_time() + vdata->starttime) /
-                              ((double)param->timelim / 4);
+  two_opt_replace(tspdata->n, tspdata->min_node_num,
+                  param->timelim - cpu_time() + vdata->starttime,
+                  weighted_adjacency_mat, vdata->bestsol);
 
-  while (cpu_time() - vdata->starttime < param->timelim) {
-    if (tspdata->n > tspdata->min_node_num) {
-      replace(tspdata->n, tspdata->min_node_num,
-              fmin(iter_tim_lim * 0.5,
-                   param->timelim - cpu_time() + vdata->starttime),
-              weighted_adjacency_mat, vdata->bestsol);
-    }
-    two_opt(tspdata->n, tspdata->min_node_num,
-            fmin(iter_tim_lim * 0.5,
-                 param->timelim - cpu_time() + vdata->starttime),
-            weighted_adjacency_mat, vdata->bestsol);
-  }
+  // const double iter_tim_lim = (param->timelim - cpu_time() +
+  // vdata->starttime) /
+  //                             ((double)param->timelim / 4);
+
+  // while (cpu_time() - vdata->starttime < param->timelim) {
+  //   if (tspdata->n > tspdata->min_node_num) {
+  //     replace(tspdata->n, tspdata->min_node_num,
+  //             fmin(iter_tim_lim * 0.5,
+  //                  param->timelim - cpu_time() + vdata->starttime),
+  //             weighted_adjacency_mat, vdata->bestsol);
+  //   }
+  //   two_opt(tspdata->n, tspdata->min_node_num,
+  //           fmin(iter_tim_lim * 0.5,
+  //                param->timelim - cpu_time() + vdata->starttime),
+  //           weighted_adjacency_mat, vdata->bestsol);
+  // }
 };
 
 int my_dist(double x_coords[], double y_coords[], int i, int j) {
@@ -172,7 +177,7 @@ void print_tour_mat(int n,
   printf("is_feasible: %d\n", my_is_feasible(n, min_node_num, tour));
 }
 
-int** const int_d2array(const int row, const int column) {
+int** int_d2array(const int row, const int column) {
   int** const array = malloc(sizeof(int*) * row);
   if (array == NULL) {
     printf("メモリが確保できません\n");

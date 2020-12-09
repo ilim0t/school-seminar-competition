@@ -68,7 +68,7 @@ void replace(const int n_nodes,
         }
       } else {
         if (!is_visiteds[insert_node] ||
-            insert_idx == local_tour[delete_node_idx_in_tour]) {
+            insert_node == local_tour[delete_node_idx_in_tour]) {
           break;
         }
       }
@@ -151,7 +151,7 @@ void replace(const int n_nodes,
     while (new_tour_idx < n_min_nodes) {
       if (old_tour_idx == insert_idx) {
         new_tour[new_tour_idx] = insert_node;
-        insert_idx = -1;
+        insert_idx = -insert_idx - 1;
         new_tour_idx++;
       } else if (old_tour_idx == delete_node_idx_in_tour) {
         old_tour_idx++;

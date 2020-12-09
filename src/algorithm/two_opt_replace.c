@@ -53,11 +53,12 @@ void two_opt_replace(const int n_nodes,
                             weighted_adjacency_mat[b_node][d_node];
 
       const double energy_diff = (double)cost_diff / min_cost * n_min_nodes;
-      const double temp = pow(0.05, (cpu_time() - starttime) / timelim);
+      const double temp =
+          pow(0.01, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
       const double acceptance_prob = exp(-energy_diff / temp);
 
-      // if (cost_diff <= 0 || (double)rand() / RAND_MAX < acceptance_prob) {
-      if (cost_diff <= 0) {
+      if (cost_diff <= 0 || (double)rand() / RAND_MAX < acceptance_prob) {
+        // if (cost_diff <= 0) {
 #if DEBUG > 1
         if (cost_diff > 0) {
           printf(
@@ -116,16 +117,29 @@ void two_opt_replace(const int n_nodes,
     }
 
     // replace
-    if ((double)rand() / RAND_MAX < 0.1) {
+    // if ((double)rand() / RAND_MAX < 0)
+    {
       int delete_node_idx_in_tour;
+      int insert_node;
       int insert_idx;
 
       while (true) {
         delete_node_idx_in_tour = rand() % n_min_nodes;
         insert_idx = rand() % n_min_nodes;
+        insert_node = rand() % n_nodes;
 
-        if ((delete_node_idx_in_tour + 1) % n_min_nodes != insert_idx) {
-          break;
+        if ((delete_node_idx_in_tour + 1) % n_min_nodes == insert_idx) {
+          continue;
+        }
+        if (insert_idx == delete_node_idx_in_tour) {
+          if (!is_visiteds[insert_node]) {
+            break;
+          }
+        } else {
+          if (!is_visiteds[insert_node] ||
+              insert_node == local_tour[delete_node_idx_in_tour]) {
+            break;
+          }
         }
       }
 
@@ -143,34 +157,13 @@ void two_opt_replace(const int n_nodes,
         following_insert = local_tour[insert_idx];
       }
 
-      int insert_node;
       int added_cost;
       if (delete_node_idx_in_tour == insert_idx) {
-        while (true) {
-          insert_node = rand() % n_nodes;
-          if (!is_visiteds[insert_node]) {
-            added_cost = weighted_adjacency_mat[pre_insert][insert_node] +
-                         weighted_adjacency_mat[insert_node][following_insert];
-            break;
-          }
-        }
+        added_cost = weighted_adjacency_mat[pre_insert][insert_node] +
+                     weighted_adjacency_mat[insert_node][following_insert];
       } else {
-        int min_insert_cost = INT_MAX;
-        for (int temp_insert_node = 0; temp_insert_node < n_nodes;
-             temp_insert_node++) {
-          if (is_visiteds[temp_insert_node]) {
-            continue;
-          }
-
-          const int cost =
-              weighted_adjacency_mat[pre_insert][temp_insert_node] +
-              weighted_adjacency_mat[temp_insert_node][following_insert];
-          if (cost < min_insert_cost) {
-            min_insert_cost = cost;
-            insert_node = temp_insert_node;
-          }
-        }
-        added_cost = min_insert_cost -
+        added_cost = weighted_adjacency_mat[pre_insert][insert_node] +
+                     weighted_adjacency_mat[insert_node][following_insert] -
                      weighted_adjacency_mat[pre_insert][following_insert];
       }
 
@@ -193,11 +186,12 @@ void two_opt_replace(const int n_nodes,
       const int cost_diff = added_cost - removed_cost;
 
       const double energy_diff = (double)cost_diff / min_cost * n_min_nodes;
-      const double temp = pow(0.05, (cpu_time() - starttime) / timelim);
+      const double temp =
+          pow(0.01, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
       const double acceptance_prob = exp(-energy_diff / temp);
 
-      // if (cost_diff <= 0 || (double)rand() / RAND_MAX < acceptance_prob) {
-      if (cost_diff <= 0) {
+      if (cost_diff <= 0 || (double)rand() / RAND_MAX < acceptance_prob) {
+        // if (cost_diff <= 0) {
 #if DEBUG > 1
         if (cost_diff > 0) {
           printf(
@@ -222,7 +216,7 @@ void two_opt_replace(const int n_nodes,
         while (new_tour_idx < n_min_nodes) {
           if (old_tour_idx == insert_idx) {
             new_tour[new_tour_idx] = insert_node;
-            insert_idx = -1;
+            insert_idx = -insert_idx - 1;
             new_tour_idx++;
           } else if (old_tour_idx == delete_node_idx_in_tour) {
             old_tour_idx++;
