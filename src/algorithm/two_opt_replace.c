@@ -9,7 +9,8 @@ void two_opt_replace(const int n_nodes,
                      const int n_min_nodes,
                      const double timelim,
                      int** weighted_adjacency_mat,
-                     int best_tour[n_nodes]) {
+                     int best_tour[n_nodes],
+                     bool is_annealing) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
   if (my_is_feasible(n_nodes, n_min_nodes, best_tour)) {
@@ -54,11 +55,11 @@ void two_opt_replace(const int n_nodes,
 
       const double energy_diff = (double)cost_diff / min_cost * n_min_nodes;
       const double temp =
-          pow(0.01, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
-      const double acceptance_prob = exp(-energy_diff / temp);
+          pow(0.001, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
+      const double acceptance_prob = pow(1.5, -energy_diff / temp);
 
-      if (cost_diff <= 0 || (double)rand() / RAND_MAX < acceptance_prob) {
-        // if (cost_diff <= 0) {
+      if (cost_diff <= 0 ||
+          (is_annealing && (double)rand() / RAND_MAX < acceptance_prob)) {
 #if DEBUG > 1
         if (cost_diff > 0) {
           printf(
@@ -117,7 +118,7 @@ void two_opt_replace(const int n_nodes,
     }
 
     // replace
-    // if ((double)rand() / RAND_MAX < 0)
+    // if ((double)rand() / RAND_MAX < 0.4)
     {
       int delete_node_idx_in_tour;
       int insert_node;
@@ -187,11 +188,11 @@ void two_opt_replace(const int n_nodes,
 
       const double energy_diff = (double)cost_diff / min_cost * n_min_nodes;
       const double temp =
-          pow(0.01, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
-      const double acceptance_prob = exp(-energy_diff / temp);
+          pow(0.001, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
+      const double acceptance_prob = pow(1.5, -energy_diff / temp);
 
-      if (cost_diff <= 0 || (double)rand() / RAND_MAX < acceptance_prob) {
-        // if (cost_diff <= 0) {
+      if (cost_diff <= 0 ||
+          (is_annealing && (double)rand() / RAND_MAX < acceptance_prob)) {
 #if DEBUG > 1
         if (cost_diff > 0) {
           printf(

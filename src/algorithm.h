@@ -126,7 +126,8 @@ void two_opt_replace(const int n_nodes,
                      const int n_min_nodes,
                      const double timelim,
                      int** weighted_adjacency_mat,
-                     int best_tour[n_nodes]);
+                     int best_tour[n_nodes],
+                     bool is_annealing);
 
 // utils
 int** int_d2array(const int row, const int column);

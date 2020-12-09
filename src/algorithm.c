@@ -23,25 +23,11 @@ void my_algorithm(const Param* const param,
                    weighted_adjacency_mat, vdata->bestsol);
 
   two_opt_replace(tspdata->n, tspdata->min_node_num,
+                  (param->timelim - cpu_time() + vdata->starttime) / 2,
+                  weighted_adjacency_mat, vdata->bestsol, false);
+  two_opt_replace(tspdata->n, tspdata->min_node_num,
                   param->timelim - cpu_time() + vdata->starttime,
-                  weighted_adjacency_mat, vdata->bestsol);
-
-  // const double iter_tim_lim = (param->timelim - cpu_time() +
-  // vdata->starttime) /
-  //                             ((double)param->timelim / 4);
-
-  // while (cpu_time() - vdata->starttime < param->timelim) {
-  //   if (tspdata->n > tspdata->min_node_num) {
-  //     replace(tspdata->n, tspdata->min_node_num,
-  //             fmin(iter_tim_lim * 0.5,
-  //                  param->timelim - cpu_time() + vdata->starttime),
-  //             weighted_adjacency_mat, vdata->bestsol);
-  //   }
-  //   two_opt(tspdata->n, tspdata->min_node_num,
-  //           fmin(iter_tim_lim * 0.5,
-  //                param->timelim - cpu_time() + vdata->starttime),
-  //           weighted_adjacency_mat, vdata->bestsol);
-  // }
+                  weighted_adjacency_mat, vdata->bestsol, true);
 };
 
 int my_dist(double x_coords[], double y_coords[], int i, int j) {
