@@ -16,7 +16,8 @@ int main(int argc, char* argv[]) {
   // FILE* fp = fopen("../data/fnl4461.tsp", "r");
   // FILE* fp = fopen("../data/nrw1379.tsp", "r");
   // FILE* fp = fopen("../data/d1291.tsp", "r");
-  FILE* fp = fopen("../data/d657.tsp", "r");
+  // FILE* fp = fopen("../data/d657.tsp", "r");
+  FILE* fp = fopen("../data/rd400.tsp", "r");
   // FILE* fp = fopen("../data/ch150.tsp", "r");
   // FILE* fp = fopen("../data/eil51.tsp", "r");
   // FILE* fp = fopen("../data/test.tsp", "r");

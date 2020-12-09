@@ -5,6 +5,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define PRINT_TOUR_LIM 20
+
 void my_algorithm(const Param* const param,
                   const TSPdata* const tspdata,
                   Vdata* const vdata) {
@@ -20,8 +22,8 @@ void my_algorithm(const Param* const param,
                    (param->timelim - cpu_time() + vdata->starttime) * 0.1,
                    weighted_adjacency_mat, vdata->bestsol);
 
-  const double iter_tim_lim =
-      (param->timelim - cpu_time() + vdata->starttime) / 20;
+  const double iter_tim_lim = (param->timelim - cpu_time() + vdata->starttime) /
+                              ((double)param->timelim / 4);
 
   while (cpu_time() - vdata->starttime < param->timelim) {
     if (tspdata->n > tspdata->min_node_num) {
@@ -116,7 +118,6 @@ void print_tour(int n,
   printf("cost: %d\n", my_compute_tour_cost(n, x_coords, y_coords, tour));
 
   printf("tour: ");
-#define PRINT_TOUR_LIM 20
   int i;
   for (i = 0; i < n; i++) {
     if (tour[i] < 0) {
@@ -150,7 +151,6 @@ void print_tour_mat(int n,
          my_compute_tour_cost_mat(n, weighted_adjacency_mat, tour));
 
   printf("tour: ");
-#define PRINT_TOUR_LIM 20
   int i;
   for (i = 0; i < n; i++) {
     if (tour[i] < 0) {
@@ -176,7 +176,7 @@ void print_tour_mat(int n,
   printf("is_feasible: %d\n", my_is_feasible(n, min_node_num, tour));
 }
 
-int** const int_d2array(const int row, const   int column) {
+int** const int_d2array(const int row, const int column) {
   int** const array = malloc(sizeof(int*) * row);
   if (array == NULL) {
     printf("メモリが確保できません\n");

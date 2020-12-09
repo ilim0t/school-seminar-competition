@@ -66,7 +66,7 @@ void nearest_neighbor(const int n_nodes,
         my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, local_tour);
     if (cost < min_cost) {
       min_cost = cost;
-#ifdef DEBUG
+#if DEBUG
       printf("\n[UPDATE] nearest_neighbor\n");
       print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, local_tour);
 #endif
@@ -134,7 +134,7 @@ void restricted_nearest_neighbor(const int n_nodes,
         my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, local_tour);
     if (cost < min_cost) {
       min_cost = cost;
-#ifdef DEBUG
+#if DEBUG
       printf("\n[UPDATE] nearest_neighbor\n");
       print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, local_tour);
 #endif

@@ -54,7 +54,7 @@ void greedy_depth_first_search(
           my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, local_tour);
 
       if (cost < *min_cost) {
-#ifdef DEBUG
+#if DEBUG
         printf("[UPDATE!]\n");
         print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat,
                        local_tour);
