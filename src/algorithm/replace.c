@@ -148,12 +148,16 @@ void replace(const int n_nodes,
     }
 #if DEBUG > 1
     if (reduced_cost < 0) {
-      printf("[Acceptance] replace, reduced_cost: %d, temp: %f, prob: %f\n",
-             reduced_cost, temp, acceptance_prob);
+      printf(
+          "[Acceptance] replace,\treduced_cost: %d,\ttemp: %f,\tprob: "
+          "%f,\tnow_cost: %d\n",
+          reduced_cost, temp, acceptance_prob,
+          my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat,
+                                   local_tour));
     }
 #endif
-
 #if DEBUG
+
     int new_tour[n_nodes];
 
     for (int tour_idx = 0; tour_idx < n_nodes; tour_idx++) {

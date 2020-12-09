@@ -49,10 +49,10 @@ void two_opt(const int n_nodes,
         (a_tour_idx + 1 + rand() % (n_min_nodes - 1)) % n_min_nodes;
     const int d_tour_idx = (b_tour_idx + 1) % n_min_nodes;
 
-    const int a_node = best_tour[a_tour_idx];
-    const int b_node = best_tour[b_tour_idx];
-    const int c_node = best_tour[c_tour_idx];
-    const int d_node = best_tour[d_tour_idx];
+    const int a_node = local_tour[a_tour_idx];
+    const int b_node = local_tour[b_tour_idx];
+    const int c_node = local_tour[c_tour_idx];
+    const int d_node = local_tour[d_tour_idx];
 
     const int reduced_cost = weighted_adjacency_mat[a_node][c_node] +
                              weighted_adjacency_mat[b_node][d_node] -
@@ -74,8 +74,12 @@ void two_opt(const int n_nodes,
     }
 #if DEBUG > 1
     if (reduced_cost < 0) {
-      printf("[Acceptance] two_opt, reduced_cost: %d, temp: %f, prob: %f\n",
-             reduced_cost, temp, acceptance_prob);
+          printf(
+              "[Acceptance] two-opt,\treduced_cost: %d,\ttemp: %f,\tprob: "
+              "%f,\tnow_cost: %d\n",
+              reduced_cost, temp, acceptance_prob,
+              my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat,
+                                       local_tour));
     }
 #endif
 
@@ -89,7 +93,7 @@ void two_opt(const int n_nodes,
 
     for (int tour_idx = b_tour_idx; tour_idx != c_tour_idx;
          tour_idx = tour_idx == 0 ? n_min_nodes - 1 : (tour_idx - 1)) {
-      new_tour[new_tour_idx] = best_tour[tour_idx];
+      new_tour[new_tour_idx] = local_tour[tour_idx];
       new_tour_idx++;
     }
     new_tour[new_tour_idx] = c_node;
@@ -97,7 +101,7 @@ void two_opt(const int n_nodes,
 
     for (int tour_idx = d_tour_idx; tour_idx != a_tour_idx;
          tour_idx = (tour_idx + 1) % n_min_nodes) {
-      new_tour[new_tour_idx] = best_tour[tour_idx];
+      new_tour[new_tour_idx] = local_tour[tour_idx];
       new_tour_idx++;
     }
     new_tour[new_tour_idx] = a_node;

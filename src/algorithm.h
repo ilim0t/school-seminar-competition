@@ -122,6 +122,12 @@ void replace(const int n_nodes,
              int** weighted_adjacency_matx_coords,
              int best_tour[n_nodes]);
 
+void two_opt_replace(const int n_nodes,
+                     const int n_min_nodes,
+                     const double timelim,
+                     int** weighted_adjacency_mat,
+                     int best_tour[n_nodes]);
+
 // utils
 int** int_d2array(const int row, const int column);
 void int_d2free(int** array, const int row);
