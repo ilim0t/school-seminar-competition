@@ -14,29 +14,30 @@ void my_algorithm(const Param* const param,
 void greedy_algorithm(const Param* const param,
                       const TSPdata* const tspdata,
                       Vdata* const vdata);
-void greedy_depth_first_search(bool local_is_visited[],
-                               int minimum_cost[],
-                               int* local_tour,
-                               int local_depth,
-                               const Param* const param,
-                               const TSPdata* const tspdata,
-                               Vdata* const vdata);
+void greedy_depth_first_search(const int n_nodes,
+                               const int n_min_nodes,
+                               const int depth,
+                               int* min_cost,
+                               bool is_visiteds[],
+                               int local_tour[],
+                               int best_tour[],
+                               const int starttime,
+                               const int timelim,
+                               int** weighted_adjacency_mat);
 
 // nearest_neighbor.c
 void nearest_neighbor_algorithm(const Param* const param,
                                 const TSPdata* const tspdata,
                                 Vdata* const vdata);
-void nearest_neighbor(int n_nodes,
-                      int n_min_nodes,
-                      double timelim,
-                      double x_coords[n_nodes],
-                      double y_coords[n_nodes],
+void nearest_neighbor(const int n_nodes,
+                      const int n_min_nodes,
+                      const double timelim,
+                      int** weighted_adjacency_mat,
                       int best_tour[n_nodes]);
-void restricted_nearest_neighbor(int n_nodes,
-                                 int n_min_nodes,
-                                 double timelim,
-                                 double x_coords[n_nodes],
-                                 double y_coords[n_nodes],
+void restricted_nearest_neighbor(const int n_nodes,
+                                 const int n_min_nodes,
+                                 const double timelim,
+                                 int** weighted_adjacency_mat,
                                  int best_tour[n_nodes],
                                  bool can_visit[n_nodes]);
 
@@ -44,49 +45,40 @@ void restricted_nearest_neighbor(int n_nodes,
 void insertion_algorithm(const Param* const param,
                          const TSPdata* const tspdata,
                          Vdata* const vdata);
-int insertion(int n_nodes,
-              int n_min_nodes,
-              double timelim,
-              double x_coords[n_nodes],
-              double y_coords[n_nodes],
+int insertion(const int n_nodes,
+              const int n_min_nodes,
+              const double timelim,
+              int** weighted_adjacency_mat,
               int best_tour[n_nodes]);
-
-// 仮
-void two_approximation_algorithm(const Param* const param,
-                                 const TSPdata* const tspdata,
-                                 Vdata* const vdata);
 
 // two_opt.c
 void two_opt_algorithm(const Param* const param,
                        const TSPdata* const tspdata,
                        Vdata* const vdata);
-void two_opt(int n_nodes,
-             int n_min_nodes,
-             double timelim,
-             double x_coords[n_nodes],
-             double y_coords[n_nodes],
+void two_opt(const int n_nodes,
+             const int n_min_nodes,
+             const double timelim,
+             int** weighted_adjacency_mat,
              int best_tour[n_nodes]);
 
 // three_opt.c
 void three_opt_algorithm(const Param* const param,
                          const TSPdata* const tspdata,
                          Vdata* const vdata);
-void three_opt(int n_nodes,
-               int n_min_nodes,
-               double timelim,
-               double x_coords[n_nodes],
-               double y_coords[n_nodes],
+void three_opt(const int n_nodes,
+               const int n_min_nodes,
+               const double timelim,
+               int** weighted_adjacency_mat,
                int best_tour[n_nodes]);
 
-  // repeated_three_opt_algorithm(&param, &tspdata, &vdata);
-  // spanning_subtree_algorithm(&param, &tspdata, &vdata);
-  // replace_algorithm(&param, &tspdata, &vdata);
 // spanning_tree.c
+void spanning_subtree_algorithm(const Param* const param,
+                                const TSPdata* const tspdata,
+                                Vdata* const vdata);
 void compute_weighted_adjacency_mat(const int n_nodes,
                                     double x_coords[n_nodes],
                                     double y_coords[n_nodes],
                                     int** weighted_adjacency_mat);
-
 void make_edge_idxs(const int n_nodes, int** edge_idxs);
 void sort_edge_idxs(const int n_nodes,
                     int** edge_idxs,
@@ -97,8 +89,7 @@ void sort_edge_idxs(const int n_nodes,
                     int** weighted_adjacency_mat  // const
 );
 void compute_min_spanning_tree_kruskals(const int n_nodes,
-                                        double x_coords[n_nodes],
-                                        double y_coords[n_nodes],
+                                        int** weighted_adjacency_mat,
                                         bool** adjacency_mat,
                                         int** sorted_edge_dists  // const
 );
@@ -125,32 +116,34 @@ void stroke_depth_first_search(const int n_nodes,
 void replace_algorithm(const Param* const param,
                        const TSPdata* const tspdata,
                        Vdata* const vdata);
-void replace(int n_nodes,
-             int n_min_nodes,
-             double timelim,
-             double x_coords[n_nodes],
-             double y_coords[n_nodes],
+void replace(const int n_nodes,
+             const int n_min_nodes,
+             const double timelim,
+             int** weighted_adjacency_matx_coords,
              int best_tour[n_nodes]);
 
 // utils
-int** int_d2array(int row, int column);
-void int_d2free(int** array, int row);
-bool** bool_d2array(int row, int column);
-void bool_d2free(bool** array, int row);
+int** int_d2array(const int row, const int column);
+void int_d2free(int** array, const int row);
+bool** bool_d2array(const int row, const int column);
+void bool_d2free(bool** array, const int row);
 
-int my_dist(double x_coords[], double y_coords[], int i, int j);
-int my_compute_tour_cost(int n,
+int my_dist(double x_coords[], double y_coords[], const int i, const int j);
+int my_compute_tour_cost(const int n,
                          double x_coords[],
                          double y_coords[],
                          const int* const tour);
-bool my_is_feasible(int n, int min_node_num, const int tour[n]);
+int my_compute_tour_cost_mat(const int n,
+                             int** weighted_adjacency_mat,
+                             const int* const tour);
+bool my_is_feasible(const int n, int min_node_num, const int tour[n]);
 
-void print_tour(int n,
-                int min_node_num,
+void print_tour(const int n,
+                const int min_node_num,
                 double x_coords[n],
                 double y_coords[n],
                 const int* const tour);
-
-void spanning_subtree_algorithm(const Param* const param,
-                                const TSPdata* const tspdata,
-                                Vdata* const vdata);
+void print_tour_mat(const int n,
+                    const int min_node_num,
+                    int** weighted_adjacency_mat,
+                    const int* const tour);

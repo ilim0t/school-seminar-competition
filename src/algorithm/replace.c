@@ -16,20 +16,24 @@ void replace_algorithm(const Param* const param,
     vdata->bestsol[i] = -1;
   }
 
-  replace(tspdata->n, tspdata->min_node_num, param->timelim, tspdata->x,
-          tspdata->y, vdata->bestsol);
+  int** weighted_adjacency_mat = int_d2array(tspdata->n, tspdata->n);
+  compute_weighted_adjacency_mat(tspdata->n, tspdata->x, tspdata->y,
+                                 weighted_adjacency_mat);
+
+  replace(tspdata->n, tspdata->min_node_num, param->timelim,
+          weighted_adjacency_mat, vdata->bestsol);
 }
 
 void replace(const int n_nodes,
              const int n_min_nodes,
              const double timelim,
-             double x_coords[n_nodes],
-             double y_coords[n_nodes],
+             int** weighted_adjacency_mat,
              int best_tour[n_nodes]) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
   if (my_is_feasible(n_nodes, n_min_nodes, best_tour)) {
-    min_cost = my_compute_tour_cost(n_nodes, x_coords, y_coords, best_tour);
+    min_cost =
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, best_tour);
   }
 
   int local_tour[n_nodes];
@@ -80,26 +84,41 @@ void replace(const int n_nodes,
 
     if (insert_idx == delete_node_idx_in_tour) {
       const int added_dist =
-          my_dist(x_coords, y_coords, pre_insert, insert_node) +
-          my_dist(x_coords, y_coords, insert_node, following_insert);
+          weighted_adjacency_mat[pre_insert][insert_node] +
+          weighted_adjacency_mat[insert_node][following_insert];
       const int delete_dist =
-          my_dist(x_coords, y_coords, pre_delete, delete_node) +
-          my_dist(x_coords, y_coords, delete_node, following_delete);
+          weighted_adjacency_mat[pre_delete][delete_node] +
+          weighted_adjacency_mat[delete_node][following_delete];
 
       reduced_dist = delete_dist - added_dist;
     } else {
       const int added_dist =
-          my_dist(x_coords, y_coords, pre_insert, insert_node) +
-          my_dist(x_coords, y_coords, insert_node, following_insert) -
-          my_dist(x_coords, y_coords, pre_insert, following_insert);
+          weighted_adjacency_mat[pre_insert][insert_node] +
+          weighted_adjacency_mat[insert_node][following_insert] -
+          weighted_adjacency_mat[pre_insert][following_insert];
       const int delete_dist =
-          my_dist(x_coords, y_coords, pre_delete, delete_node) +
-          my_dist(x_coords, y_coords, delete_node, following_delete) -
-          my_dist(x_coords, y_coords, pre_delete, following_delete);
+          weighted_adjacency_mat[pre_delete][delete_node] +
+          weighted_adjacency_mat[delete_node][following_delete] -
+          weighted_adjacency_mat[pre_delete][following_delete];
 
       reduced_dist = delete_dist - added_dist;
     }
 
+    // printf("%f\n", (cpu_time() - starttime) / timelim);  // 0 to 1
+
+    // if ((double)rand() / RAND_MAX <
+    //     pow(0.5, (cpu_time() - starttime) / timelim -
+    //                  (double)reduced_dist / min_cost * n_nodes / 10)) {
+    //   // printf("%f\n", (cpu_time() - starttime) / timelim);
+    //   // printf("%d\n", reduced_dist);
+    //   // printf("%f\n",
+    //   //        pow(0.5, (cpu_time() - starttime) / timelim -
+    //   //                     (double)reduced_dist / min_cost * n_nodes /
+    //   10));
+    //   // printf("%f\n", (double)reduced_dist / min_cost * n_nodes);
+    //   // printf("\n");
+
+    // } else
     if (reduced_dist < 0) {
       continue;
     }
@@ -133,16 +152,17 @@ void replace(const int n_nodes,
       local_tour[tour_idx] = new_tour[tour_idx];
     }
 
-    for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
-      best_tour[tour_idx] = local_tour[tour_idx];
-    }
-    // const int cost = my_compute_tour_cost(n_nodes, x_coords, y_coords, )
-    // const int cost = my_compyute()
-    // if (min_cost )
-
+    const int cost =
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, local_tour);
+    if (cost < min_cost) {
+      min_cost = cost;
+      for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
+        best_tour[tour_idx] = local_tour[tour_idx];
+      }
 #ifdef DEBUG
-    printf("\n[UPDATE] replace(reduced=%d)\n", reduced_dist);
-    print_tour(n_nodes, n_min_nodes, x_coords, y_coords, best_tour);
+      printf("\n[UPDATE] replace(reduced=%d)\n", reduced_dist);
+      print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, best_tour);
 #endif
+    }
   }
 }

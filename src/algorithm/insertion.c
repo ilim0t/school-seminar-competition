@@ -12,20 +12,24 @@ void insertion_algorithm(const Param* const param,
     vdata->bestsol[i] = -1;
   }
 
-  insertion(tspdata->n, tspdata->min_node_num, param->timelim, tspdata->x,
-            tspdata->y, vdata->bestsol);
+  int** weighted_adjacency_mat = int_d2array(tspdata->n, tspdata->n);
+  compute_weighted_adjacency_mat(tspdata->n, tspdata->x, tspdata->y,
+                                 weighted_adjacency_mat);
+
+  insertion(tspdata->n, tspdata->min_node_num, param->timelim,
+            weighted_adjacency_mat, vdata->bestsol);
 }
 
-int insertion(int n_nodes,
-              int n_min_nodes,
-              double timelim,
-              double x_coords[n_nodes],
-              double y_coords[n_nodes],
+int insertion(const int n_nodes,
+              const int n_min_nodes,
+              const double timelim,
+              int** weighted_adjacency_mat,
               int best_tour[n_nodes]) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
   if (my_is_feasible(n_nodes, n_min_nodes, best_tour)) {
-    min_cost = my_compute_tour_cost(n_nodes, x_coords, y_coords, best_tour);
+    min_cost =
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, best_tour);
   }
 
   while (cpu_time() - starttime < timelim) {
@@ -58,9 +62,9 @@ int insertion(int n_nodes,
           const int following_node = local_tour[temp_insert_loc % depth];
 
           const int cost_diff =
-              my_dist(x_coords, y_coords, previous_node, temp_next_node) +
-              my_dist(x_coords, y_coords, temp_next_node, following_node) -
-              my_dist(x_coords, y_coords, previous_node, following_node);
+              weighted_adjacency_mat[previous_node][temp_next_node] +
+              weighted_adjacency_mat[temp_next_node][following_node] -
+              weighted_adjacency_mat[previous_node][following_node];
           if (cost_diff < min_cost_diff) {
             min_cost_diff = cost_diff;
 
@@ -79,12 +83,12 @@ int insertion(int n_nodes,
     }
 
     const int cost =
-        my_compute_tour_cost(n_nodes, x_coords, y_coords, local_tour);
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, local_tour);
     if (cost < min_cost) {
       min_cost = cost;
 #ifdef DEBUG
       printf("\n[UPDATE] insertion\n");
-      print_tour(n_nodes, n_min_nodes, x_coords, y_coords, local_tour);
+      print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, local_tour);
 #endif
 
       for (int tour_idx = 0; tour_idx < n_nodes; tour_idx++) {

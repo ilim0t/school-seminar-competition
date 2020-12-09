@@ -12,9 +12,13 @@ void my_algorithm(const Param* const param,
     vdata->bestsol[i] = -1;
   }
 
+  int** weighted_adjacency_mat = int_d2array(tspdata->n, tspdata->n);
+  compute_weighted_adjacency_mat(tspdata->n, tspdata->x, tspdata->y,
+                                 weighted_adjacency_mat);
+
   nearest_neighbor(tspdata->n, tspdata->min_node_num,
                    (param->timelim - cpu_time() + vdata->starttime) * 0.1,
-                   tspdata->x, tspdata->y, vdata->bestsol);
+                   weighted_adjacency_mat, vdata->bestsol);
 
   const double iter_tim_lim =
       (param->timelim - cpu_time() + vdata->starttime) / 20;
@@ -24,16 +28,16 @@ void my_algorithm(const Param* const param,
       replace(tspdata->n, tspdata->min_node_num,
               fmin(iter_tim_lim / 4,
                    param->timelim - cpu_time() + vdata->starttime),
-              tspdata->x, tspdata->y, vdata->bestsol);
+              weighted_adjacency_mat, vdata->bestsol);
     }
     two_opt(
         tspdata->n, tspdata->min_node_num,
         fmin(iter_tim_lim / 2, param->timelim - cpu_time() + vdata->starttime),
-        tspdata->x, tspdata->y, vdata->bestsol);
+        weighted_adjacency_mat, vdata->bestsol);
     three_opt(
         tspdata->n, tspdata->min_node_num,
         fmin(iter_tim_lim / 4, param->timelim - cpu_time() + vdata->starttime),
-        tspdata->x, tspdata->y, vdata->bestsol);
+        weighted_adjacency_mat, vdata->bestsol);
   }
 };
 
@@ -56,6 +60,21 @@ int my_compute_tour_cost(int n,
     cost += my_dist(x_coords, y_coords, tour[tour_idx], tour[tour_idx + 1]);
   }
   cost += my_dist(x_coords, y_coords, tour[tour_idx], tour[0]);
+  return cost;
+}
+
+int my_compute_tour_cost_mat(int n,
+                             int** weighted_adjacency_mat,
+                             const int* const tour) {
+  int tour_idx, cost = 0;
+
+  for (tour_idx = 0; tour_idx < n - 1; tour_idx++) {
+    if (tour[tour_idx + 1] < 0) {
+      break;
+    }
+    cost += weighted_adjacency_mat[tour[tour_idx]][tour[tour_idx + 1]];
+  }
+  cost += weighted_adjacency_mat[tour[tour_idx]][tour[0]];
   return cost;
 }
 
@@ -123,7 +142,41 @@ void print_tour(int n,
   printf("is_feasible: %d\n", my_is_feasible(n, min_node_num, tour));
 }
 
-int** const int_d2array(int row, int column) {
+void print_tour_mat(int n,
+                    int min_node_num,
+                    int** weighted_adjacency_mat,
+                    const int* const tour) {
+  printf("cost: %d\n",
+         my_compute_tour_cost_mat(n, weighted_adjacency_mat, tour));
+
+  printf("tour: ");
+#define PRINT_TOUR_LIM 20
+  int i;
+  for (i = 0; i < n; i++) {
+    if (tour[i] < 0) {
+      break;
+    }
+    if (i == PRINT_TOUR_LIM) {
+      printf(", ...");
+      continue;
+    } else if (i > PRINT_TOUR_LIM) {
+      continue;
+    }
+    if (i != 0) {
+      printf(", ");
+    }
+    printf("%d", tour[i]);
+  }
+  if (i > PRINT_TOUR_LIM) {
+    printf(", %d", tour[i] < 0 ? tour[i - 1] : tour[i]);
+  }
+
+  printf("\nlength: %d\n", i);
+  printf("time: %f\n", cpu_time());
+  printf("is_feasible: %d\n", my_is_feasible(n, min_node_num, tour));
+}
+
+int** const int_d2array(const int row, const   int column) {
   int** const array = malloc(sizeof(int*) * row);
   if (array == NULL) {
     printf("メモリが確保できません\n");

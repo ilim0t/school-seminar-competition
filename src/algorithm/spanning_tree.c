@@ -22,7 +22,7 @@ void spanning_subtree_algorithm(const Param* const param,
       spanning_tree_adjacency_mat[i][j] = false;
     }
   }
-  compute_min_spanning_tree_kruskals(tspdata->n, tspdata->x, tspdata->y,
+  compute_min_spanning_tree_kruskals(tspdata->n, weighted_adjacency_mat,
                                      spanning_tree_adjacency_mat,
                                      sorted_edge_idxs);
 
@@ -48,26 +48,20 @@ void spanning_subtree_algorithm(const Param* const param,
     }
   }
 
+  double remain_time = (param->timelim - cpu_time() + vdata->starttime);
+
   restricted_nearest_neighbor(
       tspdata->n, tspdata->min_node_num,
-      (param->timelim - cpu_time() + vdata->starttime) * 0.1, tspdata->x,
-      tspdata->y, vdata->bestsol, can_visit);
+      (param->timelim - cpu_time() + vdata->starttime) * 0.1,
+      weighted_adjacency_mat, vdata->bestsol, can_visit);
 
   // subtree2tour(tspdata->n, spanning_tree_adjacency_mat, vdata->bestsol);
 
-  replace(tspdata->n, tspdata->min_node_num, param->timelim * 0.15, tspdata->x,
-          tspdata->y, vdata->bestsol);
-
-  two_opt(tspdata->n, tspdata->min_node_num,
-          (param->timelim - cpu_time() + vdata->starttime) * 0.01, tspdata->x,
-          tspdata->y, vdata->bestsol);
-  three_opt(tspdata->n, tspdata->min_node_num, param->timelim * 0.3, tspdata->x,
-            tspdata->y, vdata->bestsol);
-  replace(tspdata->n, tspdata->min_node_num, param->timelim * 0.2, tspdata->x,
-          tspdata->y, vdata->bestsol);
+  two_opt(tspdata->n, tspdata->min_node_num, remain_time * 0.3,
+          weighted_adjacency_mat, vdata->bestsol);
   three_opt(tspdata->n, tspdata->min_node_num,
-            param->timelim - cpu_time() + vdata->starttime, tspdata->x,
-            tspdata->y, vdata->bestsol);
+            (param->timelim - cpu_time() + vdata->starttime),
+            weighted_adjacency_mat, vdata->bestsol);
 
   int_d2free(weighted_adjacency_mat, tspdata->n);
   int_d2free(sorted_edge_idxs, tspdata->n * (tspdata->n - 1) / 2);
@@ -114,8 +108,7 @@ void sort_edge_idxs(const int n_nodes,
 }
 
 void compute_min_spanning_tree_kruskals(const int n_nodes,
-                                        double x_coords[n_nodes],
-                                        double y_coords[n_nodes],
+                                        int** weighted_adjacency_mat,
                                         bool** spanning_tree_adjacency_mat,
                                         int** sorted_edge_dists  // const
 ) {

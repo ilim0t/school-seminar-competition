@@ -11,19 +11,23 @@ void two_opt_algorithm(const Param* const param,
   for (int i = 0; i < tspdata->n; i++) {
     vdata->bestsol[i] = -1;
   }
+
+  int** weighted_adjacency_mat = int_d2array(tspdata->n, tspdata->n);
+  compute_weighted_adjacency_mat(tspdata->n, tspdata->x, tspdata->y,
+                                 weighted_adjacency_mat);
+
   nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim * 0.2,
-                   tspdata->x, tspdata->y, vdata->bestsol);
+                   weighted_adjacency_mat, vdata->bestsol);
 
   two_opt(tspdata->n, tspdata->min_node_num,
-          param->timelim - cpu_time() - vdata->starttime, tspdata->x,
-          tspdata->y, vdata->bestsol);
+          param->timelim - cpu_time() - vdata->starttime,
+          weighted_adjacency_mat, vdata->bestsol);
 }
 
-void two_opt(int n_nodes,
-             int n_min_nodes,
-             double timelim,
-             double x_coords[n_nodes],
-             double y_coords[n_nodes],
+void two_opt(const int n_nodes,
+             const int n_min_nodes,
+             const double timelim,
+             int** weighted_adjacency_mat,
              int best_tour[n_nodes]) {
   double starttime = cpu_time();
 
@@ -40,10 +44,10 @@ void two_opt(int n_nodes,
     const int c_node = best_tour[c_tour_idx];
     const int d_node = best_tour[d_tour_idx];
 
-    const int reduced_cost = my_dist(x_coords, y_coords, a_node, c_node) +
-                             my_dist(x_coords, y_coords, b_node, d_node) -
-                             my_dist(x_coords, y_coords, a_node, b_node) -
-                             my_dist(x_coords, y_coords, c_node, d_node);
+    const int reduced_cost = weighted_adjacency_mat[a_node][c_node] +
+                             weighted_adjacency_mat[b_node][d_node] -
+                             weighted_adjacency_mat[a_node][b_node] -
+                             weighted_adjacency_mat[c_node][d_node];
     if (reduced_cost <= 0) {
       continue;
     }
@@ -77,7 +81,7 @@ void two_opt(int n_nodes,
     }
 #if DEBUG
     printf("\n[UPDATE] two_opt(reduced_cost=%d)\n", reduced_cost);
-    print_tour(n_nodes, n_min_nodes, x_coords, y_coords, best_tour);
+    print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, best_tour);
     printf("\n");
 #endif
   }

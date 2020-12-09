@@ -12,20 +12,24 @@ void nearest_neighbor_algorithm(const Param* const param,
     vdata->bestsol[i] = -1;
   }
 
+  int** weighted_adjacency_mat = int_d2array(tspdata->n, tspdata->n);
+  compute_weighted_adjacency_mat(tspdata->n, tspdata->x, tspdata->y,
+                                 weighted_adjacency_mat);
+
   nearest_neighbor(tspdata->n, tspdata->min_node_num, param->timelim,
-                   tspdata->x, tspdata->y, vdata->bestsol);
+                   weighted_adjacency_mat, vdata->bestsol);
 }
 
-void nearest_neighbor(int n_nodes,
-                      int n_min_nodes,
-                      double timelim,
-                      double x_coords[n_nodes],
-                      double y_coords[n_nodes],
+void nearest_neighbor(const int n_nodes,
+                      const int n_min_nodes,
+                      const double timelim,
+                      int** weighted_adjacency_mat,
                       int best_tour[n_nodes]) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
   if (my_is_feasible(n_nodes, n_min_nodes, best_tour)) {
-    min_cost = my_compute_tour_cost(n_nodes, x_coords, y_coords, best_tour);
+    min_cost =
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, best_tour);
   }
 
   while (cpu_time() - starttime < timelim) {
@@ -49,7 +53,7 @@ void nearest_neighbor(int n_nodes,
         }
 
         const int cost =
-            my_dist(x_coords, y_coords, local_tour[depth - 1], temp_next_node);
+            weighted_adjacency_mat[local_tour[depth - 1]][temp_next_node];
         if (cost < nearest_cost) {
           nearest_cost = cost;
           local_tour[depth] = temp_next_node;
@@ -59,12 +63,12 @@ void nearest_neighbor(int n_nodes,
     }
 
     const int cost =
-        my_compute_tour_cost(n_nodes, x_coords, y_coords, local_tour);
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, local_tour);
     if (cost < min_cost) {
       min_cost = cost;
 #ifdef DEBUG
       printf("\n[UPDATE] nearest_neighbor\n");
-      print_tour(n_nodes, n_min_nodes, x_coords, y_coords, local_tour);
+      print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, local_tour);
 #endif
 
       for (int tour_idx = 0; tour_idx < n_nodes; tour_idx++) {
@@ -72,21 +76,22 @@ void nearest_neighbor(int n_nodes,
       }
     }
   }
-  // insertion(tspdata->n, tspdata->min_node_num, param->timelim * 0.1, tspdata->x,
+  // insertion(tspdata->n, tspdata->min_node_num, param->timelim * 0.1,
+  // tspdata->x,
   //           tspdata->y, vdata->bestsol);
 }
 
-void restricted_nearest_neighbor(int n_nodes,
-                                 int n_min_nodes,
-                                 double timelim,
-                                 double x_coords[n_nodes],
-                                 double y_coords[n_nodes],
+void restricted_nearest_neighbor(const int n_nodes,
+                                 const int n_min_nodes,
+                                 const double timelim,
+                                 int** weighted_adjacency_mat,
                                  int best_tour[n_nodes],
                                  bool can_visit[n_nodes]) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
   if (my_is_feasible(n_nodes, n_min_nodes, best_tour)) {
-    min_cost = my_compute_tour_cost(n_nodes, x_coords, y_coords, best_tour);
+    min_cost =
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, best_tour);
   }
 
   while (cpu_time() - starttime < timelim) {
@@ -116,7 +121,7 @@ void restricted_nearest_neighbor(int n_nodes,
         }
 
         const int cost =
-            my_dist(x_coords, y_coords, local_tour[depth - 1], temp_next_node);
+            weighted_adjacency_mat[local_tour[depth - 1]][temp_next_node];
         if (cost < nearest_cost) {
           nearest_cost = cost;
           local_tour[depth] = temp_next_node;
@@ -126,12 +131,12 @@ void restricted_nearest_neighbor(int n_nodes,
     }
 
     const int cost =
-        my_compute_tour_cost(n_nodes, x_coords, y_coords, local_tour);
+        my_compute_tour_cost_mat(n_nodes, weighted_adjacency_mat, local_tour);
     if (cost < min_cost) {
       min_cost = cost;
 #ifdef DEBUG
       printf("\n[UPDATE] nearest_neighbor\n");
-      print_tour(n_nodes, n_min_nodes, x_coords, y_coords, local_tour);
+      print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, local_tour);
 #endif
 
       for (int tour_idx = 0; tour_idx < n_nodes; tour_idx++) {

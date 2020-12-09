@@ -13,36 +13,22 @@ void three_opt_algorithm(const Param* const param,
     vdata->bestsol[i] = -1;
   }
 
+  int** weighted_adjacency_mat = int_d2array(tspdata->n, tspdata->n);
+  compute_weighted_adjacency_mat(tspdata->n, tspdata->x, tspdata->y,
+                                 weighted_adjacency_mat);
+
   nearest_neighbor(tspdata->n, tspdata->min_node_num,
                    (param->timelim - cpu_time() + vdata->starttime) * 0.1,
-                   tspdata->x, tspdata->y, vdata->bestsol);
-
-  const double iter_tim_lim =
-      (param->timelim - cpu_time() + vdata->starttime) / 20;
-
-  while (cpu_time() - vdata->starttime < param->timelim) {
-    if (tspdata->n > tspdata->min_node_num) {
-      replace(tspdata->n, tspdata->min_node_num,
-              fmin(iter_tim_lim / 4,
-                   param->timelim - cpu_time() + vdata->starttime),
-              tspdata->x, tspdata->y, vdata->bestsol);
-    }
-    two_opt(
-        tspdata->n, tspdata->min_node_num,
-        fmin(iter_tim_lim / 2, param->timelim - cpu_time() + vdata->starttime),
-        tspdata->x, tspdata->y, vdata->bestsol);
-    three_opt(
-        tspdata->n, tspdata->min_node_num,
-        fmin(iter_tim_lim / 4, param->timelim - cpu_time() + vdata->starttime),
-        tspdata->x, tspdata->y, vdata->bestsol);
-  }
+                   weighted_adjacency_mat, vdata->bestsol);
+  three_opt(tspdata->n, tspdata->min_node_num,
+            param->timelim - cpu_time() + vdata->starttime,
+            weighted_adjacency_mat, vdata->bestsol);
 }
 
-void three_opt(int n_nodes,
-               int n_min_nodes,
-               double timelim,
-               double x_coords[n_nodes],
-               double y_coords[n_nodes],
+void three_opt(const int n_nodes,
+               const int n_min_nodes,
+               const double timelim,
+               int** weighted_adjacency_mat,
                int best_tour[n_nodes]) {
   double starttime = cpu_time();
 
@@ -76,26 +62,26 @@ void three_opt(int n_nodes,
     const int c_node = best_tour[c_tour_idx];
     const int f_node = best_tour[f_tour_idx];
 
-    const int oririnal_cost = my_dist(x_coords, y_coords, a_node, d_node) +
-                              my_dist(x_coords, y_coords, b_node, e_node) +
-                              my_dist(x_coords, y_coords, c_node, f_node);
+    const int oririnal_cost = weighted_adjacency_mat[a_node][d_node] +
+                              weighted_adjacency_mat[b_node][e_node] +
+                              weighted_adjacency_mat[c_node][f_node];
 
     int new_costs[4];
-    new_costs[0] = my_dist(x_coords, y_coords, b_node, c_node) +
-                   my_dist(x_coords, y_coords, e_node, a_node) +
-                   my_dist(x_coords, y_coords, f_node, d_node);
+    new_costs[0] = weighted_adjacency_mat[b_node][c_node] +
+                   weighted_adjacency_mat[e_node][a_node] +
+                   weighted_adjacency_mat[f_node][d_node];
 
-    new_costs[1] = my_dist(x_coords, y_coords, b_node, a_node) +
-                   my_dist(x_coords, y_coords, f_node, e_node) +
-                   my_dist(x_coords, y_coords, c_node, d_node);
+    new_costs[1] = weighted_adjacency_mat[b_node][a_node] +
+                   weighted_adjacency_mat[f_node][e_node] +
+                   weighted_adjacency_mat[c_node][d_node];
 
-    new_costs[2] = my_dist(x_coords, y_coords, b_node, f_node) +
-                   my_dist(x_coords, y_coords, a_node, e_node) +
-                   my_dist(x_coords, y_coords, c_node, d_node);
+    new_costs[2] = weighted_adjacency_mat[b_node][f_node] +
+                   weighted_adjacency_mat[a_node][e_node] +
+                   weighted_adjacency_mat[c_node][d_node];
 
-    new_costs[3] = my_dist(x_coords, y_coords, b_node, f_node) +
-                   my_dist(x_coords, y_coords, a_node, c_node) +
-                   my_dist(x_coords, y_coords, e_node, d_node);
+    new_costs[3] = weighted_adjacency_mat[b_node][f_node] +
+                   weighted_adjacency_mat[a_node][c_node] +
+                   weighted_adjacency_mat[e_node][d_node];
 
     int min_cost_idx;
     int min_new_cost = INT_MAX;
@@ -198,7 +184,7 @@ void three_opt(int n_nodes,
 
 #if DEBUG
     printf("\n[UPDATE] three_opt (reduced_cost=%d)\n", reduced_cost);
-    print_tour(n_nodes, n_min_nodes, x_coords, y_coords, best_tour);
+    print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, best_tour);
     printf("\n");
 #endif
   }
