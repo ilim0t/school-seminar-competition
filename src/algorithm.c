@@ -28,18 +28,14 @@ void my_algorithm(const Param* const param,
   while (cpu_time() - vdata->starttime < param->timelim) {
     if (tspdata->n > tspdata->min_node_num) {
       replace(tspdata->n, tspdata->min_node_num,
-              fmin(iter_tim_lim / 4,
+              fmin(iter_tim_lim * 0.5,
                    param->timelim - cpu_time() + vdata->starttime),
               weighted_adjacency_mat, vdata->bestsol);
     }
-    two_opt(
-        tspdata->n, tspdata->min_node_num,
-        fmin(iter_tim_lim / 2, param->timelim - cpu_time() + vdata->starttime),
-        weighted_adjacency_mat, vdata->bestsol);
-    three_opt(
-        tspdata->n, tspdata->min_node_num,
-        fmin(iter_tim_lim / 4, param->timelim - cpu_time() + vdata->starttime),
-        weighted_adjacency_mat, vdata->bestsol);
+    two_opt(tspdata->n, tspdata->min_node_num,
+            fmin(iter_tim_lim * 0.5,
+                 param->timelim - cpu_time() + vdata->starttime),
+            weighted_adjacency_mat, vdata->bestsol);
   }
 };
 

@@ -50,10 +50,9 @@ void spanning_subtree_algorithm(const Param* const param,
 
   double remain_time = (param->timelim - cpu_time() + vdata->starttime);
 
-  restricted_nearest_neighbor(
-      tspdata->n, tspdata->min_node_num,
-      (param->timelim - cpu_time() + vdata->starttime) * 0.1,
-      weighted_adjacency_mat, vdata->bestsol, can_visit);
+  restricted_nearest_neighbor(tspdata->n, tspdata->min_node_num,
+                              remain_time * 0.1, weighted_adjacency_mat,
+                              vdata->bestsol, can_visit);
 
   // subtree2tour(tspdata->n, spanning_tree_adjacency_mat, vdata->bestsol);
 

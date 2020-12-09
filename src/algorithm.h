@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define DEBUG 1
+// #define DEBUG 1
 // #define DEBUG 2
 
 void my_algorithm(const Param* const param,

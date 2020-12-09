@@ -97,7 +97,7 @@ void replace(const int n_nodes,
 
     const int delete_node = local_tour[delete_node_idx_in_tour];
 
-    int reduced_dist;
+    int reduced_cost;
     const int pre_insert =
         local_tour[insert_idx == 0 ? n_min_nodes - 1 : insert_idx - 1];
     const int following_insert =
@@ -119,7 +119,7 @@ void replace(const int n_nodes,
           weighted_adjacency_mat[pre_delete][delete_node] +
           weighted_adjacency_mat[delete_node][following_delete];
 
-      reduced_dist = delete_dist - added_dist;
+      reduced_cost = delete_dist - added_dist;
     } else {
       const int added_dist =
           weighted_adjacency_mat[pre_insert][insert_node] +
@@ -130,22 +130,26 @@ void replace(const int n_nodes,
           weighted_adjacency_mat[delete_node][following_delete] -
           weighted_adjacency_mat[pre_delete][following_delete];
 
-      reduced_dist = delete_dist - added_dist;
+      reduced_cost = delete_dist - added_dist;
     }
 
     const double energy_diff =
-        (double)reduced_dist / min_cost * n_min_nodes / 2;
+        (double)reduced_cost / min_cost * n_min_nodes / 2;
     const double temp = pow(0.05, (cpu_time() - starttime) / timelim);
     const double acceptance_prob = exp(energy_diff / temp);
 
-    if (reduced_dist > 0) {
-    } else if ((double)rand() / RAND_MAX > acceptance_prob) {
+    if (reduced_cost > 0) {
+    } else if ((double)rand() / RAND_MAX < acceptance_prob) {
+      if (n_min_nodes > 1500) {
+        continue;
+      }
+    } else {
       continue;
     }
 #if DEBUG > 1
-    if (reduced_dist < 0) {
-      printf("[Acceptance], reduced_dist: %d, temp: %f, prob: %f\n",
-             reduced_dist, temp, acceptance_prob);
+    if (reduced_cost < 0) {
+      printf("[Acceptance] replace, reduced_cost: %d, temp: %f, prob: %f\n",
+             reduced_cost, temp, acceptance_prob);
     }
 #endif
 
@@ -190,7 +194,7 @@ void replace(const int n_nodes,
         best_tour[tour_idx] = local_tour[tour_idx];
       }
 #if DEBUG
-      printf("\n[UPDATE] replace(reduced=%d)\n", reduced_dist);
+      printf("\n[UPDATE] replace(reduced_cost=%d)\n", reduced_cost);
       print_tour_mat(n_nodes, n_min_nodes, weighted_adjacency_mat, best_tour);
       printf("\n");
 #endif
