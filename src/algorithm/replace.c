@@ -57,40 +57,19 @@ void replace(const int n_nodes,
     while (true) {
       delete_node_idx_in_tour = rand() % n_min_nodes;
       insert_idx = rand() % n_min_nodes;
+      insert_node = rand() % n_nodes;
 
-      if ((delete_node_idx_in_tour + 1) % n_min_nodes != insert_idx) {
-        break;
+      if ((delete_node_idx_in_tour + 1) % n_min_nodes == insert_idx) {
+        continue;
       }
-    }
-
-    if (delete_node_idx_in_tour == insert_idx) {
-      while (true) {
-        insert_node = rand() % n_nodes;
+      if (insert_idx == delete_node_idx_in_tour) {
         if (!is_visiteds[insert_node]) {
           break;
         }
-      }
-    } else {
-      int min_insert_cost = INT_MAX;
-      for (int temp_insert_node = 0; temp_insert_node < n_nodes;
-           temp_insert_node++) {
-        if (is_visiteds[temp_insert_node]) {
-          continue;
-        }
-
-        const int pre_insert =
-            local_tour[insert_idx == 0 ? n_min_nodes - 1 : insert_idx - 1];
-        const int following_insert =
-            local_tour[insert_idx == delete_node_idx_in_tour
-                           ? (insert_idx + 1) % n_min_nodes
-                           : insert_idx];
-
-        const int cost =
-            weighted_adjacency_mat[pre_insert][temp_insert_node] +
-            weighted_adjacency_mat[temp_insert_node][following_insert];
-        if (cost < min_insert_cost) {
-          min_insert_cost = cost;
-          insert_node = temp_insert_node;
+      } else {
+        if (!is_visiteds[insert_node] ||
+            insert_idx == local_tour[delete_node_idx_in_tour]) {
+          break;
         }
       }
     }
