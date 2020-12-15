@@ -1,36 +1,64 @@
 {
 	"name": "Existing Dockerfile",
-
 	// Sets the run context to one level up instead of the .devcontainer folder.
 	"context": "..",
-
 	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
 	"dockerFile": "../Dockerfile",
-
 	// Set *default* container specific settings.json values on container create.
-	"settings": { 
+	"settings": {
 		"terminal.integrated.shell.linux": null
 	},
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
 		"twxs.cmake",
-		"ms-vscode.cmake-tools"
+		"ms-vscode.cmake-tools",
+		"ms-python.python",
+		"ms-python.vscode-pylance"
 	],
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
 	// Uncomment the next line to run commands after the container is created - for example installing curl.
-	"postCreateCommand": "apt-get update && apt-get install -y git gdb",
-
+	"postCreateCommand": "apt-get update && apt-get install -y git gdb python3-pip && pip3 install optuna",
 	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
 	// "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
-
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
 	// "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
-
 	// Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
 	// "remoteUser": "vscode"
+	"containerEnv": {
+		"n_layers": "4",
+		"n0_two_opt_is_annealing": "0",
+		"n0_replace_is_annealing": "1",
+		"n0_two_opt_temp_alpha": "0.1",
+		"n0_two_opt_start": "0.0",
+		"n0_two_opt_end": "1.0",
+		"n0_replace_temp_alpha": "2.8561587504425463e-06",
+		"n0_replace_start": "0.6019078509894142",
+		"n0_replace_end": "0.8531428281530328",
+		"n1_two_opt_is_annealing": "0",
+		"n1_replace_is_annealing": "0",
+		"n1_two_opt_temp_alpha": "0.1",
+		"n1_two_opt_start": "0.0",
+		"n1_two_opt_end": "1.0",
+		"n1_replace_temp_alpha": "0.1",
+		"n1_replace_start": "0.0",
+		"n1_replace_end": "1.0",
+		"n2_two_opt_is_annealing": "0",
+		"n2_replace_is_annealing": "0",
+		"n2_two_opt_temp_alpha": "0.1",
+		"n2_two_opt_temp_start": "0.0",
+		"n2_two_opt_end": "1.0",
+		"n2_replace_temp_alpha": "0.1",
+		"n2_replace_start": "0.0",
+		"n2_replace_end": "1.0",
+		"n3_two_opt_is_annealing": "0",
+		"n3_replace_is_annealing": "1",
+		"n3_two_opt_temp_alpha": "0.1",
+		"n3_two_opt_temp_start": "0.0",
+		"n3_two_opt_end": "1.0",
+		"n3_replace_temp_alpha": "0.00043473040175860786",
+		"n3_replace_start": "0.44607493496934036",
+		"n3_replace_end": "0.998966659148576",
+	}
 }

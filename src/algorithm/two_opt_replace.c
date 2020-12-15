@@ -10,7 +10,12 @@ void two_opt_replace(const int n_nodes,
                      const double timelim,
                      int** weighted_adjacency_mat,
                      int best_tour[n_nodes],
-                     bool is_annealing) {
+                     const bool two_opt_is_annealing,
+                     const bool replace_is_annealing,
+                     const double two_opt_temp_alpha,
+                     const double two_opt_time_offset,
+                     const double replace_temp_alpha,
+                     const double replace_time_offset) {
   double starttime = cpu_time();
   int min_cost = INT_MAX;
   if (my_is_feasible(n_nodes, n_min_nodes, best_tour)) {
@@ -24,16 +29,14 @@ void two_opt_replace(const int n_nodes,
   }
 
   bool is_visiteds[n_nodes];
-  for (int i; i < n_min_nodes; i++) {
+  for (int i = 0; i < n_min_nodes; i++) {
     is_visiteds[i] = false;
   }
   for (int tour_idx = 0; tour_idx < n_min_nodes; tour_idx++) {
     is_visiteds[local_tour[tour_idx]] = true;
   }
 
-  int count = 0;
   while (cpu_time() - starttime < timelim) {
-    count++;
     // two-opt
     {
       const int a_tour_idx = rand() % n_min_nodes;
@@ -55,11 +58,12 @@ void two_opt_replace(const int n_nodes,
 
       const double energy_diff = (double)cost_diff / min_cost * n_min_nodes;
       const double temp =
-          pow(0.001, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
-      const double acceptance_prob = pow(1.5, -energy_diff / temp);
+          pow(two_opt_temp_alpha,
+              two_opt_time_offset + (cpu_time() - starttime) / timelim);
+      const double acceptance_prob = exp(-energy_diff / temp);
 
-      if (cost_diff <= 0 ||
-          (is_annealing && (double)rand() / RAND_MAX < acceptance_prob)) {
+      if (cost_diff <= 0 || (two_opt_is_annealing &&
+                             (double)rand() / RAND_MAX < acceptance_prob)) {
 #if DEBUG > 1
         if (cost_diff > 0) {
           printf(
@@ -188,11 +192,12 @@ void two_opt_replace(const int n_nodes,
 
       const double energy_diff = (double)cost_diff / min_cost * n_min_nodes;
       const double temp =
-          pow(0.001, 0.5 + 0.5 * (cpu_time() - starttime) / timelim);
-      const double acceptance_prob = pow(1.5, -energy_diff / temp);
+          pow(replace_temp_alpha,
+              replace_time_offset + (cpu_time() - starttime) / timelim);
+      const double acceptance_prob = exp(-energy_diff / temp);
 
-      if (cost_diff <= 0 ||
-          (is_annealing && (double)rand() / RAND_MAX < acceptance_prob)) {
+      if (cost_diff <= 0 || (replace_is_annealing &&
+                             (double)rand() / RAND_MAX < acceptance_prob)) {
 #if DEBUG > 1
         if (cost_diff > 0) {
           printf(
@@ -253,5 +258,4 @@ void two_opt_replace(const int n_nodes,
       }
     }
   }
-  printf("count: %d\n", count);
 }
